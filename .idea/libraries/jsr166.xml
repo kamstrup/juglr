@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="jsr166">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jsr166.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="http://gee.cs.oswego.edu/dl/jsr166/dist/jsr166ydocs/" />
+    </JAVADOC>
+    <SOURCES />
+  </library>
+</component>

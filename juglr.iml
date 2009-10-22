@@ -9,6 +9,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="jsr166" level="project" />
+    <orderEntry type="library" name="testng" level="project" />
   </component>
 </module>
 

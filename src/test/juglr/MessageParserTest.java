@@ -48,7 +48,7 @@ public class MessageParserTest {
     public void parseJSon(String json, Message expected) {
         MessageParser parser = new JSonMessageParser();
 
-        Message result = parser.parse(json);
+        StructuredMessage result = parser.parse(json);
         assertEquals(result,expected);
 
     }

@@ -1,0 +1,17 @@
+ * Blocking streams to avoid thread pool starvation on blocing IO
+     - note that we also need to do managed blocks when creating the stream
+       instances in the first place (eg. new FileInputStream)
+
+ * A clean way to send a Shutdown message from the bus to all actors
+
+ * A massive scale test (1M+ actors)
+
+ * Unit tests
+
+ * Migrate Juglr into Jumpr namespace as jumpr.messaging
+
+ * Migrate standard Jumpr classes to jumpr.core
+
+ * A SwarmActor, RelayActor or what's-it-called that dispatches messages
+   between a collection of addresses. This should be used to obtain easy
+   parallelization of actor tasks

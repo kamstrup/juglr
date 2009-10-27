@@ -3,40 +3,23 @@ package juglr;
 import java.util.concurrent.ForkJoinPool;
 import static java.util.concurrent.ForkJoinPool.ManagedBlocker;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *
  */
-public abstract class Actor {
-
-    /**
-     *
-     */
-    static class ForkJoinMessageClosure extends RecursiveAction {
-
-        private Message msg;
-        private Address receiver;
-
-        public ForkJoinMessageClosure(Message msg, Address receiver) {
-            this.msg = msg;
-            this.receiver = receiver;
-        }
-
-        @Override
-        public void compute() {
-            receiver.resolve().dispatchReact(msg);
-        }
-    }
+public abstract class Actor {    
 
     private MessageBus bus;
     private Address address;
     private ManagedBlocker blocker;
+    private final Lock dispatchLock = new ReentrantLock();
+    private final Condition publicPostFlag  = dispatchLock.newCondition();
+    private final Condition privatePostFlag = dispatchLock.newCondition();
     private Message waitingMessage;
-
-    /* Concurrency note: These two members must only be accessed
-     *                   while holding the monitor on postFlag */
-    private boolean waitingForPostFlag;
-    private final Object postFlag = new Object();
+    private boolean waitingForPrivatePostFlag;
 
     public Actor() {
         this(MessageBus.getDefault());
@@ -45,7 +28,7 @@ public abstract class Actor {
     public Actor(MessageBus bus) {
         this.bus = bus;
         address = bus.newAddress(this);
-        waitingForPostFlag = false;
+        waitingMessage = null;
     }
 
     public final Address getAddress() {
@@ -58,22 +41,21 @@ public abstract class Actor {
 
     public final void send(Message msg, Address receiver) {
         msg.setSender(this.getAddress());
-        bus.getPool().submit(new ForkJoinMessageClosure(msg, receiver));
+        bus.send(msg, receiver);
     }
 
-    public final synchronized Message awaitMessage ()
-                                                   throws InterruptedException {
+    /**
+     * Returns {@code null} if interrupted
+     * @return
+     */
+    public final Message awaitMessage () {
         if (blocker == null) {
             blocker = new ManagedBlocker() {
 
                 public boolean block() throws InterruptedException {
-                    if (!isReleasable()) {
-                        synchronized (postFlag) {
-                            waitingForPostFlag = true;
-                            postFlag.wait();
-                        }
-                        return isReleasable();
-                    }
+                    // Release dispatchLock
+                    privatePostFlag.await();
+
                     return isReleasable();
                 }
 
@@ -83,14 +65,19 @@ public abstract class Actor {
             };
         }
 
-        ForkJoinPool.managedBlock(blocker, true);
-
-        /* We are now guaranteed that waitingMessage is != null */
-        synchronized (postFlag) {
-            Message incoming = waitingMessage;
-            waitingForPostFlag = false;
+        try {
             waitingMessage = null;
+            waitingForPrivatePostFlag = true;
+            ForkJoinPool.managedBlock(blocker, true);
+            Message incoming = waitingMessage;
+            waitingMessage = null;
+            waitingForPrivatePostFlag = false;
+            publicPostFlag.signal();
             return incoming;
+        } catch (InterruptedException e) {
+            // Ignore interrupts, we *likely* have waitingMessage == null,
+            // but this is OK by our contract
+            return null;
         }
     }
 
@@ -98,21 +85,29 @@ public abstract class Actor {
      * This method ensures that access to react() is always synchronized
      * @param msg the message to invoke react() on
      */
-    private void dispatchReact(Message msg) {
+    void dispatchReact(Message msg) {
         /* If actor is stuck in a awaitMessage() then pass the message
          * into this context, notify the waiting thread, and return
          */
-        synchronized (postFlag) {
-            if (waitingForPostFlag) {
+        dispatchLock.lock();
+        try {
+            if (waitingMessage != null || waitingForPrivatePostFlag) {
+                while (waitingMessage != null) {
+                    try {
+                        publicPostFlag.await();
+                    } catch (InterruptedException e) {
+                        // Ignore
+                    }                    
+                }
                 waitingMessage = msg;
-                postFlag.notify();
+                privatePostFlag.signal();
                 return;
+            } else {
+                /* All is well */
+                react(msg);
             }
-        }
-
-        /* All is well */
-        synchronized (this) {
-            react(msg);
+        } finally {
+            dispatchLock.unlock();
         }
     }
 

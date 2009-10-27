@@ -1,12 +1,38 @@
 package juglr;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
  */
 public class MessageBus {
+
+    /**
+     *
+     */
+    static class ForkJoinMessageClosure extends RecursiveAction {
+
+        private MessageBus bus;
+        private Message msg;
+        private Address receiver;
+
+        public ForkJoinMessageClosure(
+                                MessageBus bus, Message msg, Address receiver) {
+            this.bus = bus;
+            this.msg = msg;
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void compute() {
+            Actor actor = bus.lookup(receiver);
+            actor.dispatchReact(msg);
+        }
+    }
 
     private static AtomicLong addressCounter = new AtomicLong(1);
     private static MessageBus defaultBus;
@@ -20,30 +46,65 @@ public class MessageBus {
     }
 
     private ForkJoinPool pool;
+    private Map<String,Actor> addressSpace;
 
     public MessageBus() {
         pool = new ForkJoinPool();
-    }
+        addressSpace = new HashMap<String,Actor>();
 
-    ForkJoinPool getPool() {
-        return pool;
+        pool.setAsyncMode(true);
     }
 
     public Address newAddress(final Actor actor) {
-        return new Address() {
+        Address address =
+                new LocalAddress(
+                        ":" + addressCounter.getAndIncrement(), actor, this);
+        addressSpace.put(address.externalize(), actor);
 
-            String address = ":" + addressCounter.getAndIncrement();
-            Actor resident = actor;
+        return address;
+    }
 
-            @Override
-            public String externalize() {
-                return address;
-            }
+    public void send (Message msg, Address recipient) {
+        pool.submit(new ForkJoinMessageClosure(this, msg, recipient));
+    }
 
-            @Override
-            public Actor resolve() {
-                return resident;
-            }
-        };
+    private Actor lookup(Address address) {
+        // Fast path lookups for local addresses
+        if (address instanceof LocalAddress) {
+            return ((LocalAddress) address).resolve();
+        }
+
+        return addressSpace.get(address.externalize());
+    }
+
+    private Actor lookup(String address) {
+        return addressSpace.get(address);
+    }
+
+    private static class LocalAddress extends Address {
+
+        String address;
+        Actor resident;
+        MessageBus bus;
+
+        public LocalAddress(String address, Actor resident, MessageBus bus) {
+            this.address = address;
+            this.resident = resident;
+            this.bus = bus;
+        }
+
+        @Override
+        public String externalize() {
+            return address;
+        }
+
+        @Override
+        public MessageBus getBus() {
+            return bus;
+        }
+
+        public Actor resolve() {
+            return resident;
+        }
     }
 }

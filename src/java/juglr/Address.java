@@ -9,8 +9,8 @@ public abstract class Address {
         return externalize();
     }
 
-    public abstract String externalize();
+    public abstract MessageBus getBus();
 
-    abstract Actor resolve();
+    public abstract String externalize();
 
 }

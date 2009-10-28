@@ -30,6 +30,11 @@ public class PingPong {
         int pings = 0;
 
         @Override
+        public void start() {
+            System.out.println("[" + this + "] Started");
+        }
+
+        @Override
         public void react(Message msg) {
             /* This impl. is the "slow and blocking approach" */
             /*System.out.println("[" + this
@@ -46,7 +51,7 @@ public class PingPong {
         private void sendReply(Message msg) {
             pings++;
             System.out.println(
-             "[" + getAddress() + "] replying to " + msg.getSender());
+             "[" + this + "] replying to " + msg.getSender());
             send(new Message(), msg.getSender());
         }
     }
@@ -54,7 +59,7 @@ public class PingPong {
     public static void main(String[] args) throws Exception {
         Actor pong = new SwarmActor(new Pong(), new Pong(), new Pong());
 
-        Actor[] pings = new Actor[100000];
+        Actor[] pings = new Actor[50000];
         for (int i = 0; i < pings.length; i++) {
             pings[i] = new Ping(pong.getAddress());
         }

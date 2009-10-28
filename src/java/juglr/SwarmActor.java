@@ -14,6 +14,8 @@ public class SwarmActor extends Actor {
 
         public Address next(Message msg);
 
+        public void start();
+
     }
 
     private static class RoundRobinStrategy implements Strategy {
@@ -53,6 +55,12 @@ public class SwarmActor extends Actor {
             }
 
             return iter.next();
+        }
+
+        public void start() {
+            for (Address delegate : delegates) {
+                delegate.getBus().start(delegate);
+            }
         }
     }
 
@@ -111,5 +119,10 @@ public class SwarmActor extends Actor {
         /* Send via the bus instead of this.send()
          * to avoid rewriting the sender address */
         getBus().send(msg, delegate);
+    }
+
+    @Override
+    public void start() {
+        strategy.start();
     }
 }

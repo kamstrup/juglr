@@ -12,7 +12,10 @@ import java.util.List;
 public class MulticastActor extends Actor {
 
     public static interface Strategy {
-        Iterator<Address> recipients(Message msg);
+
+        public Iterator<Address> recipients(Message msg);
+
+        public void start();
     }
 
     private static class ForwardToAllStrategy implements Strategy {
@@ -48,6 +51,12 @@ public class MulticastActor extends Actor {
 
         public Iterator<Address> recipients(Message msg) {
             return delegates.iterator();
+        }
+
+        public void start() {
+            for (Address delegate : delegates) {
+                delegate.getBus().start(delegate);
+            }
         }
     }
 
@@ -108,5 +117,10 @@ public class MulticastActor extends Actor {
         while (recipients.hasNext()) {
             send(msg, recipients.next());
         }
+    }
+
+    @Override
+    public void start() {
+        strategy.start();
     }
 }

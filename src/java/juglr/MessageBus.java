@@ -34,6 +34,27 @@ public class MessageBus {
         }
     }
 
+    /**
+     *
+     */
+    static class ForkJoinStartClosure extends RecursiveAction {
+
+        private MessageBus bus;
+        private Address receiver;
+
+        public ForkJoinStartClosure(
+                                MessageBus bus, Address receiver) {
+            this.bus = bus;
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void compute() {
+            Actor actor = bus.lookup(receiver);
+            actor.start();
+        }
+    }
+
     private static AtomicLong addressCounter = new AtomicLong(1);
     private static MessageBus defaultBus;
 
@@ -64,8 +85,12 @@ public class MessageBus {
         return address;
     }
 
-    public void send (Message msg, Address recipient) {
+    public void send(Message msg, Address recipient) {
         pool.submit(new ForkJoinMessageClosure(this, msg, recipient));
+    }
+
+    public void start(Address recipient) {
+        pool.submit(new ForkJoinStartClosure(this, recipient));
     }
 
     private Actor lookup(Address address) {

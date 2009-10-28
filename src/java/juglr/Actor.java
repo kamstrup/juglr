@@ -35,6 +35,10 @@ public abstract class Actor {
         return address;
     }
 
+    public MessageBus getBus() {
+        return bus;
+    }
+
     public String toString() {
         return address.externalize();
     }

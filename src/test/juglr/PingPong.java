@@ -32,15 +32,15 @@ public class PingPong {
         @Override
         public void react(Message msg) {
             /* This impl. is the "slow and blocking approach" */
-            System.out.println("[" + this
+            /*System.out.println("[" + this
                   + "] Initial ping from [" + msg.getSender() + "]");
             sendReply(msg);
             while ((msg = awaitMessage()) != null) {
                 sendReply(msg);
-            }
+            }*/
 
             /* This react() impl. would be the "fast and snappy" approach */
-            //sendReply(msg);
+            sendReply(msg);
         }
 
         private void sendReply(Message msg) {
@@ -52,9 +52,9 @@ public class PingPong {
     }
 
     public static void main(String[] args) throws Exception {
-        Pong pong = new Pong();
+        Actor pong = new SwarmActor(new Pong(), new Pong(), new Pong());
 
-        Actor[] pings = new Actor[10];
+        Actor[] pings = new Actor[100000];
         for (int i = 0; i < pings.length; i++) {
             pings[i] = new Ping(pong.getAddress());
         }

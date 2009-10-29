@@ -2,7 +2,6 @@ package juglr;
 
 import java.util.concurrent.ForkJoinPool;
 import static java.util.concurrent.ForkJoinPool.ManagedBlocker;
-import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -27,7 +26,7 @@ public abstract class Actor {
 
     public Actor(MessageBus bus) {
         this.bus = bus;
-        address = bus.newAddress(this);
+        address = bus.allocateUniqueAddress(this);
         waitingMessage = null;
     }
 

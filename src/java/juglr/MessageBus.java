@@ -76,13 +76,17 @@ public class MessageBus {
         pool.setAsyncMode(true);
     }
 
-    public Address newAddress(final Actor actor) {
+    public Address allocateUniqueAddress(final Actor actor) {
         Address address =
                 new LocalAddress(
                         ":" + addressCounter.getAndIncrement(), actor, this);
         addressSpace.put(address.externalize(), actor);
 
         return address;
+    }
+
+    public boolean freeAddress(Address address) {
+        return addressSpace.remove(address.externalize()) != null;
     }
 
     public void send(Message msg, Address recipient) {

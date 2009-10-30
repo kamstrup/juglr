@@ -5,7 +5,7 @@ import java.util.Map;
 
 /**
  * Serialize a {@link Message} object to JSON. To save system resources you can
- * resuse the same JSonMessageReader by calling
+ * reuse the same JSonMessageReader by calling
  * {@link #reset(StructuredMessage)} when starting the serialization of a
  * new message.
  */

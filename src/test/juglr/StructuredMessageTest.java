@@ -77,9 +77,9 @@ public class StructuredMessageTest {
 
     @Test
     public void stringConversion() {
-        assertEquals(new StructuredMessage("foo").toString(), "'foo'");
-        assertEquals(new StructuredMessage("").toString(), "''");
-        assertEquals(new StructuredMessage("# foo --* ").toString(), "'# foo --* '");
+        assertEquals(new StructuredMessage("foo").toString(), "\"foo\"");
+        assertEquals(new StructuredMessage("").toString(), "\"\"");
+        assertEquals(new StructuredMessage("# foo --* ").toString(), "\"# foo --* \"");
 
         assertEquals(new StructuredMessage(1).toString(), "1");
         assertEquals(new StructuredMessage(-1).toString(), "-1");
@@ -99,15 +99,15 @@ public class StructuredMessageTest {
         assertEquals(StructuredMessage.newList()
                                       .add(new StructuredMessage(1))
                                       .add(new StructuredMessage("foo"))
-                                      .toString(), "[1, 'foo']");
+                                      .toString(), "[1,\"foo\"]");
 
         assertEquals(StructuredMessage.newMap().toString(), "{}");
         assertEquals(StructuredMessage.newMap()
                                       .put("one", new StructuredMessage(1))
-                                      .toString(), "{'one' : 1}");
+                                      .toString(), "{\"one\":1}");
         assertEquals(StructuredMessage.newMap()
                                       .put("one", new StructuredMessage(1))
                                       .put("bar", new StructuredMessage("foo"))
-                                      .toString(), "{'one' : 1, 'bar' : 'foo'}");
+                                      .toString(), "{\"one\":1,\"bar\":\"foo\"}");
     }
 }

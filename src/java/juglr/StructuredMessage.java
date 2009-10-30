@@ -353,40 +353,6 @@ public class StructuredMessage extends Message implements Serializable {
 
     @Override
     public String toString() {
-        String s = null;
-        switch (getType()) {
-            case BOOLEAN:
-                return Boolean.toString(getBoolean());
-            case FLOAT:
-                return Double.toString(getFloat());
-            case INT:
-                return Long.toString(getLong());
-            case LIST:
-                s = "[";
-                for (int i = 0; i < size(); i++) {
-                    if (s.length() == 1) {
-                        s += get(i);
-                    } else {
-                        s += ", " + get(i);
-                    }
-                }
-                return s + "]";
-            case MAP:
-                Map<String,StructuredMessage> map = getMap();
-                s = "{";
-                for (Map.Entry<String,StructuredMessage> entry: map.entrySet()){
-                    if (s.length() == 1) {
-                        s += "'" + entry.getKey() +"' : " + entry.getValue();
-                    } else {
-                        s += ", '" + entry.getKey()
-                                 + "' : " + entry.getValue();
-                    }
-
-                }
-                return s + "}";
-            case STRING:
-                return "'" + getString() + "'";
-        }
-        return "ERROR";
+        return new JSonMessageReader(this).asString();
     }
 }

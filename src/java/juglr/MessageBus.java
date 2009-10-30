@@ -80,7 +80,7 @@ public class MessageBus {
     public Address allocateUniqueAddress(final Actor actor) {
         Address address =
                 new LocalAddress(
-                        ":" + addressCounter.getAndIncrement(), actor, this);
+                        "+" + addressCounter.getAndIncrement(), actor, this);
         addressSpace.put(address.externalize(), actor);
 
         return address;
@@ -92,7 +92,7 @@ public class MessageBus {
             throw new AddressAlreadyOwnedException(name);
         }
 
-        if (name.startsWith(":")) {
+        if (name.startsWith("+")) {
             throw new IllegalAddressException(
                     "Address must not start with ':' : " + name);
         }

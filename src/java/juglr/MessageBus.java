@@ -1,6 +1,7 @@
 package juglr;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
@@ -85,8 +86,52 @@ public class MessageBus {
         return address;
     }
 
+    public synchronized Address allocateNamedAddress(Actor actor, String name)
+                                           throws AddressAlreadyOwnedException {
+        if (addressSpace.containsKey(name)) {
+            throw new AddressAlreadyOwnedException(name);
+        }
+
+        if (name.startsWith(":")) {
+            throw new IllegalAddressException(
+                    "Address must not start with ':' : " + name);
+        }
+
+        // FIXME: More strict naming scheme, throw IllegalAddressException
+
+        Address address =
+                new LocalAddress(
+                        name, actor, this);
+        addressSpace.put(address.externalize(), actor);
+
+        return address;
+    }
+
     public boolean freeAddress(Address address) {
         return addressSpace.remove(address.externalize()) != null;
+    }
+
+    public Iterator<Address> list() {
+        /* We delegate work to this iter to be able to resolve addresses
+         * most efficiently without looking them up. Basically this approach
+         * allows us to use the fast path enabled by LocalAddress when
+         * resolving the actor for the address */
+        final Iterator<Actor> iter = addressSpace.values().iterator();
+
+        return new Iterator<Address>() {
+
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            public Address next() {
+                return iter.next().getAddress();
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 
     public void send(Message msg, Address recipient) {
@@ -106,8 +151,9 @@ public class MessageBus {
         return addressSpace.get(address.externalize());
     }
 
-    private Actor lookup(String address) {
-        return addressSpace.get(address);
+    public Address lookup(String address) {
+        Actor actor = addressSpace.get(address);
+        return actor == null ? null : actor.getAddress();
     }
 
     private static class LocalAddress extends Address {

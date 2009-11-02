@@ -44,8 +44,10 @@ public class HTTPServerExample {
                         }
                         System.out.println("Last header length: " + headerLength);
 
-                        System.out.println("BODY:");
-                        System.out.println(new String(req.readBody()));
+                        int bodyLength = req.readBody(buf);
+                        System.out.println("BODY (length " + bodyLength + "):");
+                        String body = new String(buf, 0, bodyLength);
+                        System.out.println(body);
                     } finally {
                         try {
                             channel.close();

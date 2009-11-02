@@ -20,9 +20,14 @@ public class HTTPRequestReader {
     private SocketChannel channel;
     private ByteBuffer buf;   
 
-    public HTTPRequestReader(SocketChannel channel) {
+    public HTTPRequestReader(SocketChannel channel,
+                             ByteBuffer buf) {
         this.channel = channel;
-        buf = ByteBuffer.allocate(1024);
+        this.buf = buf;
+    }
+
+    public HTTPRequestReader(SocketChannel channel) {
+        this(channel, ByteBuffer.allocate(1024));
     }
 
     public Method readMethod() {
@@ -155,10 +160,10 @@ public class HTTPRequestReader {
         return -1;
     }
 
-    public byte[] readBody() {
-        byte[] bytes = new byte[buf.remaining()];
-        buf.get(bytes);
-        return bytes;
+    public int readBody(byte[] target) {
+        int numRead = Math.min(buf.remaining(), target.length);
+        buf.get(target, 0, numRead);
+        return numRead;
     }
 
 

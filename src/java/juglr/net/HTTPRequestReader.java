@@ -124,25 +124,31 @@ public class HTTPRequestReader {
 
     public int readHeaderField(byte[] target) {
         int fieldEnd = buf.position();
+
+        // The empty line just before the body
+        if (fieldEnd + 2 < buf.limit() &&
+            buf.get(fieldEnd) == '\r' && buf.get(fieldEnd + 1) == '\n') {
+
+            // Move position to after fieldEnd + '\r' + '\n'
+            buf.position(fieldEnd + 2);
+            return 0;
+        }
+
         while (fieldEnd < MAX_HEADER_LENGTH &&
                fieldEnd + 2 < buf.limit()) {
 
             // Success on line end
             if (buf.get(fieldEnd + 1) == '\r' && buf.get(fieldEnd +2) == '\n') {
-                int numRead = fieldEnd - buf.position() + 1;
+                int numRead = Math.min(target.length,
+                                       fieldEnd - buf.position() + 1);
                 buf.get(target, 0, numRead);
-                buf.get(); // Skip carriage return
-                buf.get(); // Skip newline
+
+                // Move position to after fieldEnd + '\r' + '\n', even though
+                // we might have read less than the entire line
+                buf.position(fieldEnd + 3);
                 return numRead;
             }
             fieldEnd++;
-        }
-
-        // The empty line just before the body
-        if (buf.get(fieldEnd) == '\r' && buf.get(fieldEnd + 1) == '\n') {
-            buf.get(); // Skip carriage return
-            buf.get(); // Skip newline
-            return 0;
         }
 
         // We did not meet a line end

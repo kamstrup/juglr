@@ -30,6 +30,20 @@ public class HTTPRequestReader {
         this(channel, ByteBuffer.allocate(1024));
     }
 
+    public HTTPRequestReader reset(SocketChannel channel) throws IOException {
+        close();
+        this.channel = channel;
+        buf.clear();
+
+        return this;
+    }
+
+    public void close() throws IOException {
+        if (this.channel.isOpen()) {
+            this.channel.close();
+        }
+    }
+
     public Method readMethod() {
         int numRead;
         try {

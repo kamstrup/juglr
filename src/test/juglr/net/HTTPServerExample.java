@@ -5,7 +5,6 @@ import juglr.Message;
 import static juglr.net.HTTP.*;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 /**
@@ -19,6 +18,7 @@ public class HTTPServerExample {
             return new TCPChannelActor() {
 
                 HTTPRequestReader req = new HTTPRequestReader(channel);
+                HTTPResponseWriter resp = new HTTPResponseWriter(channel);
 
                 @Override
                 public void react(Message msg) {
@@ -48,9 +48,21 @@ public class HTTPServerExample {
                         System.out.println("BODY (length " + bodyLength + "):");
                         String body = new String(buf, 0, bodyLength);
                         System.out.println(body);
+
+                        resp.writeVersion(Version.ONE_ZERO);
+                        resp.writeStatus(Status.OK);
+                        resp.writeHeader("Content-Length", "" + (10 + body.length()));
+                        resp.writeHeader("Server", "juglr");
+                        resp.startBody();
+                        resp.writeBody(("You said: " + body).getBytes());
+                    } catch (IOException e) {
+                        // Error writing response
+                        // FIXME: Handle this gracefully
+                        System.err.println("Error writing response");
+                        e.printStackTrace();
                     } finally {
                         try {
-                            channel.close();
+                            resp.close();
                         } catch (IOException e) {
                             e.printStackTrace(); // FIXME
                         }

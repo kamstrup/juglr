@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Interface for parsers cabable of parsing {@link Message} objects from
- * character streams
+ * Interface for parsers cabable of parsing {@link StructuredMessage} objects
+ * from character streams.
  */
 public interface MessageParser {
 

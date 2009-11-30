@@ -5,7 +5,7 @@ FOR 0.1
 
  * Being able to disconnect from the bus (deallocateAddress)
 
- * Registering address with well known names
+ * Be able to unsubscribe from well known address
 
 FOR 0.2
 -------

@@ -79,7 +79,7 @@ public class HTTPServerExample {
         server.start();
 
         // Keep alive for 1 minute
-        Thread.sleep(1000*600);
+        Thread.sleep(1000*60);
         System.out.println("Timed out");
     }
 

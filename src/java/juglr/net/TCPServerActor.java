@@ -55,12 +55,13 @@ public class TCPServerActor extends Actor {
     private ServerSocketChannel server;
     private Thread acceptThread;
 
-    public TCPServerActor(
-            SocketAddress socketAddress, TCPChannelActorFactory factory)
+    public TCPServerActor(SocketAddress socketAddress,
+                          TCPChannelActorFactory factory,
+                          MessageBus bus)
                                                             throws IOException {
-
+        super(bus);
         acceptThread = new Thread(
-                new ConnectionListener(socketAddress, factory, getBus()),
+                new ConnectionListener(socketAddress, factory, bus),
                 "ConnectionLister[" + socketAddress +"]"
         );
         acceptThread.setDaemon(true); // Allow JVM to exit
@@ -68,13 +69,26 @@ public class TCPServerActor extends Actor {
 
     public TCPServerActor(int port, TCPChannelActorFactory factory)
                                                             throws IOException {
-        this(new InetSocketAddress(port), factory);
+        this(new InetSocketAddress(port), factory, MessageBus.getDefault());
     }
 
     public TCPServerActor(
             String hostname, int port, TCPChannelActorFactory factory)
                                                             throws IOException {
-        this(new InetSocketAddress(hostname, port), factory);
+        this(new InetSocketAddress(hostname, port),
+             factory, MessageBus.getDefault());
+    }
+
+    public TCPServerActor(
+            int port, TCPChannelActorFactory factory, MessageBus bus)
+                                                            throws IOException {
+        this(new InetSocketAddress(port), factory, bus);
+    }
+
+    public TCPServerActor(String hostname, int port,
+                          TCPChannelActorFactory factory, MessageBus bus)
+                                                            throws IOException {
+        this(new InetSocketAddress(hostname, port), factory, bus);
     }
 
     @Override

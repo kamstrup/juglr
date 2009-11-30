@@ -61,14 +61,15 @@ public class MessageBus {
 
     public static synchronized MessageBus getDefault() {
         if (defaultBus == null) {
-            String busClass = System.getProperty(
+            String busClassName = System.getProperty(
                                     "juglr.busclass", "juglr.MessageBus");
             try {
-                defaultBus = (MessageBus)Class.forName(busClass).newInstance();
+                Class busClass = Class.forName(busClassName);
+                defaultBus = (MessageBus)busClass.newInstance();
             } catch (Throwable t) {
                 throw new EnvironmentError(
                         "Unable to load default message bus class, "
-                        + busClass + ": " + t.getMessage(), t);
+                        + busClassName + ": " + t.getMessage(), t);
             }
         }
 

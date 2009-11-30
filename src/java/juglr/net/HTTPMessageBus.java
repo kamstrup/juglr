@@ -20,7 +20,7 @@ public class HTTPMessageBus extends MessageBus {
     private Actor server;
 
     public HTTPMessageBus(int port) throws IOException {
-        server = new TCPServerActor(port, new ConnectionActorFactory());
+        server = new TCPServerActor(port, new ConnectionActorFactory(), this);
         server.start();
     }
 
@@ -63,6 +63,13 @@ public class HTTPMessageBus extends MessageBus {
                         // FIXME: Allocation should be thread local
                         byte[] buf = new byte[1024];
                         HTTP.Method method = req.readMethod();
+
+                        if (method != HTTP.Method.POST) {
+                            respond(HTTP.Status.MethodNotAllowed,
+                                    "Only POST allowed, got " + method);
+                            return;
+                        }
+
                         int uriLength = req.readURI(buf);
                         String uri = new String(buf, 0, uriLength);
                         HTTP.Version ver = req.readVersion();
@@ -75,7 +82,15 @@ public class HTTPMessageBus extends MessageBus {
                         InputStream bodyStream = new ByteArrayInputStream(
                                                             buf, 0, bodyLength);
                         Reader bodyReader = new InputStreamReader(bodyStream);
-                        StructuredMessage msg = msgParser.parse(bodyReader);
+
+                        StructuredMessage msg;
+                        try {
+                            msg = msgParser.parse(bodyReader);
+                        } catch (MessageFormatException e) {
+                            respond(HTTP.Status.BadRequest,
+                                    "Illegal JSON POST data");
+                            return;
+                        }
 
                         Address recipient = lookup(uri);
                         if (recipient == null) {
@@ -113,6 +128,31 @@ public class HTTPMessageBus extends MessageBus {
                     resp.writeBody(msg.getBytes());
                 }
             };
+        }
+    }
+
+    public static void main(String[] args) {
+        System.setProperty("juglr.busclass", "juglr.net.HTTPMessageBus");
+
+        if (args.length > 0) {
+            System.setProperty("juglr.busport", args[0]);
+        }
+
+        MessageBus bus = null;
+        try {
+            bus = MessageBus.getDefault();
+        } catch (EnvironmentError e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        try {
+            synchronized (bus) {
+                bus.wait(); // Indefinite non-busy block
+            }
+        } catch (InterruptedException e) {
+            System.err.println("Interrupted");
+            System.exit(-1);
         }
     }
 }

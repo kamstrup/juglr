@@ -61,7 +61,15 @@ public class MessageBus {
 
     public static synchronized MessageBus getDefault() {
         if (defaultBus == null) {
-            defaultBus = new MessageBus();
+            String busClass = System.getProperty(
+                                    "juglr.busclass", "juglr.MessageBus");
+            try {
+                defaultBus = (MessageBus)Class.forName(busClass).newInstance();
+            } catch (Throwable t) {
+                throw new EnvironmentError(
+                        "Unable to load default message bus class, "
+                        + busClass + ": " + t.getMessage(), t);
+            }
         }
 
         return defaultBus;
@@ -80,7 +88,7 @@ public class MessageBus {
     public Address allocateUniqueAddress(final Actor actor) {
         Address address =
                 new LocalAddress(
-                        "+" + addressCounter.getAndIncrement(), actor, this);
+                        "/" + addressCounter.getAndIncrement(), actor, this);
         addressSpace.put(address.externalize(), actor);
 
         return address;
@@ -92,7 +100,7 @@ public class MessageBus {
             throw new AddressAlreadyOwnedException(name);
         }
 
-        if (name.startsWith("+")) {
+        if (name.startsWith("/")) {
             throw new IllegalAddressException(
                     "Address must not start with ':' : " + name);
         }

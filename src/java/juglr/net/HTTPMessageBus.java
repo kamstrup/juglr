@@ -242,6 +242,7 @@ public class HTTPMessageBus extends MessageBus {
                             }
 
                             // Recipent should respond with a SM to sender
+                            // FIXME: We need a timeout to avoid leaking SocketChannels
                             super.send(msg, recipient);
                             break;
                         case LIST:

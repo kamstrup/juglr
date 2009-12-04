@@ -97,6 +97,22 @@ public class StructuredMessage extends Message implements Serializable {
         return type;
     }
 
+    public Type getType(int index) {
+        return get(index).getType();
+    }
+
+    public Type getType(String key) {
+        return get(key).getType();
+    }
+
+    public boolean has(String key) {
+        return get(key) != null;
+    }
+
+    public boolean has(int index) {
+        return index >= 0 && index < getList().size();
+    }
+
     public Serializable getVal() {
         return val;
     }
@@ -353,6 +369,20 @@ public class StructuredMessage extends Message implements Serializable {
 
     @Override
     public String toString() {
-        return new JSonMessageReader(this).asString();
+        switch (type) {
+            case INT:
+            case FLOAT:
+            case BOOLEAN:
+                return val.toString();
+            case STRING:
+                return "\"" + val.toString() + "\"";
+            case MAP:
+            case LIST:
+                return new JSonMessageReader(this).asString();
+            default:
+                // This should never happen
+                throw new RuntimeException("Unexpected message type " + type);
+        }
+
     }
 }

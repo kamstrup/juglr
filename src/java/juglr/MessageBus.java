@@ -110,7 +110,6 @@ public class MessageBus {
                 new LocalAddress(
                         name, actor, this);
         addressSpace.put(address.externalize(), actor);
-        System.out.println("ALLOCATE " + address);
         return address;
     }
 

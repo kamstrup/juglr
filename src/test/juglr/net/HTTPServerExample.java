@@ -1,86 +1,85 @@
 package juglr.net;
 
-import juglr.Actor;
-import juglr.Message;
+import juglr.*;
+
 import static juglr.net.HTTP.*;
+import static juglr.StructuredMessage.Type;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.channels.SocketChannel;
 
 /**
+ * A simple example that uses a HTTPMessageBus to expose a service that
+ * calculates whether or not a given number is a prime.
+ * <p/>
+ * JSON messages should be <code>POST</code>ed to
+ * <a href="http://localhost:4567/actor/calc">http://localhost:4567/calc</a>
+ * looking like:
+ * <pre>
+ * {
+ *    "isPrime" : 123
+ * }
+ * </pre>
  *
+ * To invoke the 'list' or 'ping' handlers you can point your browser at
+ * <a href="http://localhost:4567/list">http://localhost:4567/list</a> or
+ * <a href="http://localhost:4567/ping/calc">http://localhost:4567/ping/calc</a>.
+ * Or simply use a command line tool like <code>wget</code> to send
+ * <code>GET</code> requests to those URLs.
  */
 public class HTTPServerExample {
 
-    static class ActorFactory implements TCPChannelActorFactory {
+    static class CalcActor extends Actor {
 
-        public TCPChannelActor accept(final SocketChannel channel) {
-            return new TCPChannelActor() {
+        public void start() {
+            try {
+                getBus().allocateNamedAddress(this, "calc");
+            } catch (AddressAlreadyOwnedException e) {
+                e.printStackTrace();
+            }
+        }
 
-                HTTPRequestReader req = new HTTPRequestReader(channel);
-                HTTPResponseWriter resp = new HTTPResponseWriter(channel);
+        public void react(Message msg) {
+            if (!(msg instanceof StructuredMessage)) {
+                throw new MessageFormatException("Expected StructuredMessage");
+            }
 
-                @Override
-                public void react(Message msg) {
+            StructuredMessage resp = new StructuredMessage(Type.MAP);
+            StructuredMessage json = (StructuredMessage)msg;
+            if (!json.has("isPrime")) {
+                resp.put("error", "No 'isPrime' key in request");
+                send(resp, msg.getSender());
+                return;
+            }
+            String test = json.get("isPrime").toString();
 
+            try {
+                BigInteger bigInt = new BigInteger(test);
+
+                // We guess right with 0.9990234375 probab
+                if (bigInt.isProbablePrime(10)) {
+                    resp.put("response", "true");
+                } else {
+                    resp.put("response", "false");
                 }
-
-                @Override
-                public void start() {
-                    try {
-                        byte[] buf = new byte[1024];
-                        Method method = req.readMethod();
-                        int uriLength = req.readURI(buf);
-                        String uri = new String(buf, 0, uriLength);
-                        Version ver = req.readVersion();
-                        System.out.println("METHOD: " + method);
-                        System.out.println("URI: " + uri + " (length " + uriLength +")");
-                        System.out.println("Version: " + ver);
-
-                        int headerLength;
-                        while ((headerLength = req.readHeaderField(buf)) > 0) {
-                            System.out.println(
-                                 "Header: " + new String(buf, 0, headerLength));
-                        }
-                        System.out.println("Last header length: " + headerLength);
-
-                        int bodyLength = req.readBody(buf);
-                        System.out.println("BODY (length " + bodyLength + "):");
-                        String body = new String(buf, 0, bodyLength);
-                        System.out.println(body);
-
-                        resp.writeVersion(Version.ONE_ZERO);
-                        resp.writeStatus(Status.OK);
-                        resp.writeHeader("Content-Length", "" + (10 + body.length()));
-                        resp.writeHeader("Server", "juglr");
-                        resp.startBody();
-                        resp.writeBody(("You said: " + body).getBytes());
-                    } catch (IOException e) {
-                        // Error writing response
-                        // FIXME: Handle this gracefully
-                        System.err.println("Error writing response");
-                        e.printStackTrace();
-                    } finally {
-                        try {
-                            resp.close();
-                        } catch (IOException e) {
-                            e.printStackTrace(); // FIXME
-                        }
-                    }
-                    System.out.println("CONNECTION HANDLED");
-                    // FIXME disconnect from bus to clean up address space!
-                }
-            };
+                send(resp, msg.getSender());
+            } catch (NumberFormatException e) {
+                resp.put("error", "Not a valid integer");
+                send(resp, msg.getSender());
+                return;
+            }
         }
     }
 
     public static void main (String[] args) throws Exception {
-        Actor server = new TCPServerActor(3333, new ActorFactory());
-        server.start();
+        System.setProperty("juglr.busclass", "juglr.net.HTTPMessageBus");
+        Actor actor = new CalcActor();
+        MessageBus.getDefault().start(actor.getAddress());
 
-        // Keep alive for 1 minute
-        Thread.sleep(1000*60);
-        System.out.println("Timed out");
+        synchronized (actor) {
+            actor.wait(); // Indefinte non-busy block
+        }
     }
 
 }

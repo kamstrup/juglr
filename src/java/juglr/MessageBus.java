@@ -89,7 +89,7 @@ public class MessageBus {
     public Address allocateUniqueAddress(final Actor actor) {
         Address address =
                 new LocalAddress(
-                        "/" + addressCounter.getAndIncrement(), actor, this);
+                        "" + addressCounter.getAndIncrement(), actor, this);
         addressSpace.put(address.externalize(), actor);
 
         return address;
@@ -103,16 +103,14 @@ public class MessageBus {
 
         if (name.startsWith("/")) {
             throw new IllegalAddressException(
-                    "Address must not start with ':' : " + name);
+                    "Address must not start with '/' : " + name);
         }
-
-        // FIXME: More strict naming scheme, throw IllegalAddressException
 
         Address address =
                 new LocalAddress(
                         name, actor, this);
         addressSpace.put(address.externalize(), actor);
-
+        System.out.println("ALLOCATE " + address);
         return address;
     }
 
@@ -121,11 +119,12 @@ public class MessageBus {
     }
 
     public Iterator<Address> list() {
-        /* We delegate work to this iter to be able to resolve addresses
-         * most efficiently without looking them up. Basically this approach
-         * allows us to use the fast path enabled by LocalAddress when
-         * resolving the actor for the address */
-        final Iterator<Actor> iter = addressSpace.values().iterator();
+        /* We delegate work to this iter to be able to resolve the returned
+         * addresses most efficiently without looking them up.
+         * Basically this approach allows us to use the fast path enabled by
+         * LocalAddress when resolving the actor for the address via addr.resident */
+        final Iterator<String> iter = addressSpace.keySet().iterator();
+        final MessageBus dummy = this;
 
         return new Iterator<Address>() {
 
@@ -134,7 +133,8 @@ public class MessageBus {
             }
 
             public Address next() {
-                return iter.next().getAddress();
+                String ext = iter.next();
+                return new LocalAddress(ext, addressSpace.get(ext), dummy);
             }
 
             public void remove() {
@@ -172,7 +172,11 @@ public class MessageBus {
         MessageBus bus;
 
         public LocalAddress(String address, Actor resident, MessageBus bus) {
-            this.address = address;
+            if (!address.startsWith("/")) {
+                this.address = "/" + address;
+            } else {
+                this.address = address;
+            }
             this.resident = resident;
             this.bus = bus;
         }
@@ -189,6 +193,33 @@ public class MessageBus {
 
         public Actor resolve() {
             return resident;
+        }
+    }
+
+    public static void main(String[] args) {
+        if (System.getProperty("juglr.busclass") == null) {
+            System.setProperty("juglr.busclass", "juglr.net.HTTPMessageBus");
+        }
+
+        if (args.length > 0) {
+            System.setProperty("juglr.busport", args[0]);
+        }
+
+        MessageBus bus = null;
+        try {
+            bus = MessageBus.getDefault();
+        } catch (EnvironmentError e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        try {
+            synchronized (bus) {
+                bus.wait(); // Indefinite non-busy block
+            }
+        } catch (InterruptedException e) {
+            System.err.println("Interrupted");
+            System.exit(-1);
         }
     }
 }

@@ -7,6 +7,8 @@ FOR 0.1
 
  * Be able to unsubscribe from well known address
 
+ * Bridge HTTP methods to native MB methods in HTTPMessageBus 
+
 FOR 0.2
 -------
 

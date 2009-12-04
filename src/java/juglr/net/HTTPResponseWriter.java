@@ -64,8 +64,25 @@ public class HTTPResponseWriter {
         writeBody(new byte[]{'\r', '\n'});
     }
 
+    public void writeBody(String s) throws IOException {
+        for (int i = 0; i < s.length(); i++) {
+            // FIXME: Encoding bug. We cast char to byte
+            writeBody((byte)s.charAt(i));
+        }
+    }
+
     public void writeBody(byte[] bytes) throws IOException {
         writeBody(bytes, 0, bytes.length);
+    }
+
+    public void writeBody (byte b) throws IOException {
+        // Try and make room, if we are filled up. The flush() guarantees
+        // that buf is cleared. Thus we should have space for at least one byte
+        if (buf.remaining() == 1) {
+            flush();
+        }
+
+        buf.put(b);
     }
 
     public void writeBody(byte[] bytes, int offset, int len) throws IOException {

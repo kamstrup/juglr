@@ -78,6 +78,41 @@ public class HTTP {
                     return 500;
             }
         }
+
+        public static Status fromHttpOrdinal(int ord) {
+            switch (ord) {
+                case 200:
+                    return OK;
+                case 201:
+                    return Created;
+                case 202:
+                    return Accepted;
+                case 204:
+                    return NoContent;
+                case 302:
+                    return Found;
+                case 400:
+                    return BadRequest;
+                case 401:
+                    return Unauthorized;
+                case 403:
+                    return Forbidden;
+                case 404:
+                    return NotFound;
+                case 405:
+                    return MethodNotAllowed;
+                case 406:
+                    return NotAcceptable;
+                case 408:
+                    return RequestTimeout;
+                case 409:
+                    return Conflict;
+                case 500:
+                    return InternalError;
+                default:
+                    return InternalError;
+            }
+        }
     }
 
 }

@@ -1,10 +1,13 @@
 package juglr.net;
 
 /**
- *
+ * Constants used for the HTTP implementation
  */
 public class HTTP {
 
+    /**
+     * Enumeration of HTTP methods
+     */
     public enum Method {
         GET,
         POST,
@@ -17,6 +20,9 @@ public class HTTP {
         ERROR
     }
 
+    /**
+     * HTTP protocol version
+     */
     public enum Version {
         ONE_ZERO,
         ONE_ONE,
@@ -26,7 +32,8 @@ public class HTTP {
 
     /**
      * HTTP Status Codes - see
-     * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">RFC 2616</a> 
+     * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">RFC 2616</a>.
+     * This is an incomplete list but it covers the most used status codes.
      */
     public enum Status {
         OK,
@@ -44,6 +51,13 @@ public class HTTP {
         Conflict,
         InternalError;
 
+        /**
+         * Return the numrical HTTP status code for a {@code Status} instance.
+         * The code
+         * {@code fromHttpOrdinal(status.httpOrdinal()) == status} is guaranteed
+         * to evaluate to {@code true}.
+         * @return the numrical HTTP status code for the instance
+         */
         public int httpOrdinal() {
             switch (this) {
                 case OK:
@@ -79,6 +93,14 @@ public class HTTP {
             }
         }
 
+        /**
+         * Return a {@code Status} instance matching a given numrical HTTP
+         * status code. The code
+         * {@code fromHttpOrdinal(status.httpOrdinal()) == status} is guaranteed
+         * to evaluate to {@code true}.
+         * @param ord the numerical status code
+         * @return the {@code Status} instance matching {@code ord}
+         */
         public static Status fromHttpOrdinal(int ord) {
             switch (ord) {
                 case 200:

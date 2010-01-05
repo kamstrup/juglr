@@ -7,7 +7,35 @@ import java.nio.channels.SocketChannel;
 import static juglr.net.HTTP.*;
 
 /**
+ * A {@link java.io.Reader}-like API for parsing HTTP requests from a
+ * {@link SocketChannel}. This class does
+ * not automatically parse the HTTP header and body. You must manually do this,
+ * by calling the appropriate {@code read*}-methods in the order the
+ * corresponding elements occur in the HTTP request.
+ * The reason for this is to allow for absolutely optimized parsing of the
+ * HTTP request.
  *
+ * <p/>
+ * To parse a HTTP request you would do something like:
+ * <pre>
+ * byte[] buf = new byte[1024];
+ * HTTPRequestReader reader = new HTTPRequestReader(chan);
+ * HTTP.Method method = reader.readMethod();
+ * int uriLen = reader.readURI(buf);
+ * HTTP.Version version = reader.readVersion();
+ *
+ * System.out.println("Request URI: " + new String(buf, 0, uriLen));
+ *
+ * while ((int headerLen = reader.readHeaderField(buf)) &gt; 0) {
+ *     System.out.println("Header field: " + new String(buf, 0, headerLen));
+ * }
+ *
+ * System.out.println("Body:");
+ * while ((int len = reader.readBody(buf)) > 0) {
+ *     System.out.print(new String(buf, 0, len));
+ * }
+ * System.out.println();
+ * </pre>
  */
 public class HTTPRequestReader {
 
@@ -30,6 +58,15 @@ public class HTTPRequestReader {
         this(channel, ByteBuffer.allocate(1024));
     }
 
+    /**
+     * Reset all state in the reader, preparing it for reading {@code channel}.
+     * @param channel the channel to start reading from. If the reader refers
+     * a channel then this channel will be closed.
+     *
+     * @return always returns {@code this}
+     * @throws IOException if the reader already refers an open channel and
+     *                     there is an error closing it
+     */
     public HTTPRequestReader reset(SocketChannel channel) throws IOException {
         close();
         this.channel = channel;
@@ -38,6 +75,11 @@ public class HTTPRequestReader {
         return this;
     }
 
+    /**
+     * Close the underlying channel if it's open
+     * @throws IOException if the underlying channel is open and there is an
+     *                     error closing the channel
+     */
     public void close() throws IOException {
         if (this.channel.isOpen()) {
             this.channel.close();

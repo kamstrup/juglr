@@ -19,16 +19,16 @@ public class TCPServerActor extends Actor {
     private static class ConnectionListener implements Runnable {
 
         private ServerSocketChannel server;
-        private TCPChannelActorFactory actorFactory;
+        private TCPChannelStrategy strategy;
         private MessageBus bus;
 
         public ConnectionListener (SocketAddress socketAddress,
-                                   TCPChannelActorFactory actorFactory,
+                                   TCPChannelStrategy strategy,
                                    MessageBus bus)
                                                             throws IOException {
             server = ServerSocketChannel.open();
             server.socket().bind(socketAddress);
-            this.actorFactory = actorFactory;
+            this.strategy = strategy;
             this.bus = bus;
         }
 
@@ -36,7 +36,7 @@ public class TCPServerActor extends Actor {
             while (true) {
                 try {
                     SocketChannel channel = server.accept();
-                    TCPChannelActor actor = actorFactory.accept(channel);
+                    TCPChannelActor actor = strategy.accept(channel);
                     bus.start(actor.getAddress());
                 } catch (ClosedChannelException e) {
                     // Handles interrupts etc.
@@ -56,39 +56,39 @@ public class TCPServerActor extends Actor {
     private Thread acceptThread;
 
     public TCPServerActor(SocketAddress socketAddress,
-                          TCPChannelActorFactory factory,
+                          TCPChannelStrategy strategy,
                           MessageBus bus)
                                                             throws IOException {
         super(bus);
         acceptThread = new Thread(
-                new ConnectionListener(socketAddress, factory, bus),
+                new ConnectionListener(socketAddress, strategy, bus),
                 "ConnectionLister[" + socketAddress +"]"
         );
         acceptThread.setDaemon(true); // Allow JVM to exit
     }
 
-    public TCPServerActor(int port, TCPChannelActorFactory factory)
+    public TCPServerActor(int port, TCPChannelStrategy strategy)
                                                             throws IOException {
-        this(new InetSocketAddress(port), factory, MessageBus.getDefault());
+        this(new InetSocketAddress(port), strategy, MessageBus.getDefault());
     }
 
     public TCPServerActor(
-            String hostname, int port, TCPChannelActorFactory factory)
+            String hostname, int port, TCPChannelStrategy strategy)
                                                             throws IOException {
         this(new InetSocketAddress(hostname, port),
-             factory, MessageBus.getDefault());
+             strategy, MessageBus.getDefault());
     }
 
     public TCPServerActor(
-            int port, TCPChannelActorFactory factory, MessageBus bus)
+            int port, TCPChannelStrategy strategy, MessageBus bus)
                                                             throws IOException {
-        this(new InetSocketAddress(port), factory, bus);
+        this(new InetSocketAddress(port), strategy, bus);
     }
 
     public TCPServerActor(String hostname, int port,
-                          TCPChannelActorFactory factory, MessageBus bus)
+                          TCPChannelStrategy strategy, MessageBus bus)
                                                             throws IOException {
-        this(new InetSocketAddress(hostname, port), factory, bus);
+        this(new InetSocketAddress(hostname, port), strategy, bus);
     }
 
     @Override

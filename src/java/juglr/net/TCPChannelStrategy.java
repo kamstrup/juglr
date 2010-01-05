@@ -5,7 +5,7 @@ import java.nio.channels.SocketChannel;
 /**
  *
  */
-public interface TCPChannelActorFactory {
+public interface TCPChannelStrategy {
 
     public TCPChannelActor accept (SocketChannel channel);
 

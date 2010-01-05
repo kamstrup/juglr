@@ -1,7 +1,6 @@
 package juglr.net;
 
 import juglr.*;
-import static juglr.StructuredMessage.Type;
 
 import java.io.*;
 import java.nio.channels.SocketChannel;
@@ -22,7 +21,7 @@ public class HTTPMessageBus extends MessageBus {
     private Actor server;
 
     public HTTPMessageBus(int port) throws IOException {
-        server = new TCPServerActor(port, new ConnectionActorFactory(), this);
+        server = new TCPServerActor(port, new ConnectionStrategy(), this);
         server.start();
     }
 
@@ -102,7 +101,7 @@ public class HTTPMessageBus extends MessageBus {
      * This class is really just a factory for closures dispatching
      * HTTP messages to the recipient actor.
      */
-    class ConnectionActorFactory implements TCPChannelActorFactory {
+    class ConnectionStrategy implements TCPChannelStrategy {
 
         public TCPChannelActor accept(final SocketChannel channel) {
             return new TCPChannelActor() {

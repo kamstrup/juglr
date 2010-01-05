@@ -5,7 +5,6 @@ import juglr.Message;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
 
 /**
@@ -13,7 +12,7 @@ import java.nio.channels.SocketChannel;
  */
 public class TCPServerExample {
 
-    static class ActorFactory implements TCPChannelActorFactory {
+    static class Strategy implements TCPChannelStrategy {
 
         public TCPChannelActor accept(final SocketChannel channel) {
             return new TCPChannelActor() {
@@ -55,7 +54,7 @@ public class TCPServerExample {
     }
 
     public static void main (String[] args) throws Exception {
-        Actor server = new TCPServerActor(3333, new ActorFactory());
+        Actor server = new TCPServerActor(3333, new Strategy());
         server.start();
 
         // Keep alive for 1 minute

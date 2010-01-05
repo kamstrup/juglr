@@ -12,7 +12,15 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 /**
- * 
+ * A TCP server that accepts connections in a designated thread and dispatches
+ * control to a {@link TCPChannelActor} obtained from a
+ * {@link TCPChannelStrategy}. The {@code accept}-loop is very tight and is able
+ * to handle a massive number of concurrent connections (mainly limited by the
+ * multiplexing capabilities of Java's {@link ServerSocketChannel}).
+ * <p/>
+ * To stop the server send it the {@link #SHUTDOWN} message.
+ *
+ * @seealso {@link HTTPMessageBus}
  */
 public class TCPServerActor extends Actor {
 
@@ -67,6 +75,13 @@ public class TCPServerActor extends Actor {
         acceptThread.setDaemon(true); // Allow JVM to exit
     }
 
+    /**
+     * Create a server listening on {@code port} handling connection with
+     * actor obtained from {@code strategy}
+     * @param port
+     * @param strategy
+     * @throws IOException
+     */
     public TCPServerActor(int port, TCPChannelStrategy strategy)
                                                             throws IOException {
         this(new InetSocketAddress(port), strategy, MessageBus.getDefault());

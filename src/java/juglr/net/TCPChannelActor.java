@@ -1,19 +1,19 @@
 package juglr.net;
 
 import juglr.Actor;
-import juglr.Message;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 /**
+ * An {@link Actor} handling a TCP connection via a {@link SocketChannel}.
+ * Normally the life cycle of {@code TCPChannelActor}s are controlled by a
+ * {@link TCPChannelStrategy}.
  *
+ * @see TCPServerActor
+ * @see TCPChannelStrategy
  */
 public abstract class TCPChannelActor extends Actor {
 
-
+    // This is an abstract class in order to make it possible
+    // to keep private state around if we need to do so in the future
 }

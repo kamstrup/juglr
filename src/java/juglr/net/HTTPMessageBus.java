@@ -15,6 +15,9 @@ import java.util.Iterator;
  *     - Remote start()
  *   * Implement a HTTPMessageBusProxy which is a MessageBus that talks
  *     to a remote HTTPMessageBus
+ *
+ * @see TCPServerActor
+ * @see MessageBus
  */
 public class HTTPMessageBus extends MessageBus {
 

@@ -1,5 +1,7 @@
 package juglr;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import static java.util.concurrent.ForkJoinPool.ManagedBlocker;
 import java.util.concurrent.locks.Condition;
@@ -7,13 +9,34 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- *
+ * Base class for all actors. An Actor in the Juglr framework sends and receives
+ * {@link Message}s over a {@link MessageBus}. All communications between actors
+ * is fully asynchronous.
+ * <p/>
+ * A very important rule when coding with actors is the idea of
+ * <i>"shared nothing"</i>. This is enforced by routing all inter-actor
+ * communuications through the message bus. It must be emphasized
+ * that actors should not have direct references to each
+ * other. Instead they simply store the {@link Address}es of the actors they
+ * need to send messages to.
+ * <p/>
+ * Although the standard {@link Message} class can indeed hold shared state it
+ * is strongly advised to avoid this. One way assert that there is no shared
+ * state is to only use {@link StructuredMessage}s which can only store
+ * simply data types (and also have the added benefit of mapping cleanly to
+ * JSON).
+ * <p/>
+ * There are two central callback methods actors can override, namely
+ * {@link #react} and {@link #start}. As a rule of thumb these methods should
+ * never block in order not to starvate the underlying threadpool of the
+ * message bus. There are two legal ways for an actor to block, notably
+ * {@link #awaitMessage()} and {@link await(Callable)}
  */
 public abstract class Actor {    
 
     private MessageBus bus;
     private Address address;
-    private ManagedBlocker blocker;
+    private ManagedBlocker messageBlocker;
     private final Lock dispatchLock = new ReentrantLock();
     private final Condition publicPostFlag  = dispatchLock.newCondition();
     private final Condition privatePostFlag = dispatchLock.newCondition();
@@ -52,8 +75,8 @@ public abstract class Actor {
      * @return
      */
     public final Message awaitMessage () {
-        if (blocker == null) {
-            blocker = new ManagedBlocker() {
+        if (messageBlocker == null) {
+            messageBlocker = new ManagedBlocker() {
 
                 public boolean block() throws InterruptedException {
                     // Release dispatchLock
@@ -71,7 +94,7 @@ public abstract class Actor {
         try {
             waitingMessage = null;
             waitingForPrivatePostFlag = true;
-            ForkJoinPool.managedBlock(blocker, true);
+            ForkJoinPool.managedBlock(messageBlocker, true);
             Message incoming = waitingMessage;
             waitingMessage = null;
             waitingForPrivatePostFlag = false;
@@ -81,6 +104,38 @@ public abstract class Actor {
             // Ignore interrupts, we *likely* have waitingMessage == null,
             // but this is OK by our contract
             return null;
+        }
+    }
+
+    /**
+     * Do a blocking call and return its value. This is useful for doing
+     * IO or other blocking operations. The blocking will be done in a manner
+     * such that the thread pool of the message bus will not be affected.
+     * <p/>
+     * If you need to do a lot of blocking operations consider batching them
+     * into one call to this method. Ie. don't read 128 bit blocks from a file
+     * in sequential calls to this method, but read big chunks or even the whole
+     * file in one go.
+     *
+     * @param closure the callable to execute
+     * @return the return value of {@code closure.call()}
+     * @throws InterruptedException if interrupted while processing the
+     *     blocking call
+     * @throws InvocationTargetException if {@code closure.call()} throws an
+     *     exception. In this case the cause of the
+     *     {@code InvocationTargetException} is guaranteed to be set to the
+     *     original exception from {@code closure.call()}.
+     *
+     */
+    public final <T> T await(final Callable<T> closure)
+                        throws InvocationTargetException, InterruptedException {
+        BlockingClosure<T> closureBlocker = new BlockingClosure<T>(closure);
+
+        ForkJoinPool.managedBlock(closureBlocker, true);
+        if (closureBlocker.getError() != null) {
+            throw new InvocationTargetException(closureBlocker.getError());
+        } else {
+            return closureBlocker.getResult();
         }
     }
 
@@ -134,5 +189,38 @@ public abstract class Actor {
      * @param msg the incoming message
      */
     public abstract void react (Message msg);
+
+    private static class BlockingClosure<T> implements ManagedBlocker {
+        private T result;
+        private Exception exception;
+        private Callable<T> closure;
+
+        public BlockingClosure(Callable<T> closure) {
+            this.closure = closure;
+        }
+
+        public boolean block() throws InterruptedException {
+            try {
+                result = closure.call();
+            } catch (Exception e) {
+                exception = e;
+            } finally {
+                closure = null;
+            }
+            return isReleasable();
+        }
+
+        public boolean isReleasable() {
+            return closure == null;
+        }
+
+        public Exception getError() {
+            return exception;
+        }
+
+        public T getResult() {
+            return result;
+        }
+    }
 
 }

@@ -30,7 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * {@link #react} and {@link #start}. As a rule of thumb these methods should
  * never block in order not to starvate the underlying threadpool of the
  * message bus. There are two legal ways for an actor to block, notably
- * {@link #awaitMessage()} and {@link await(Callable)}
+ * {@link #awaitMessage()} and {@link #await(Callable)}
  */
 public abstract class Actor {    
 

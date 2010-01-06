@@ -1,0 +1,22 @@
+
+  Juglr  Actor- and Messaging library for Java 6 and later
+
+  LEGAL NOTICE
+  Please make sure that you acknowledge and understand the LICENSE and
+  NOTICE files shipped with this distribution before using Jumpr.
+
+  SPECIAL NOTICE FOR JAVA 6
+  The Juglr runtime depends on Doug Lea's Fork/Join framework also
+  known as JSR166. This is scheduled to be part of Java 7, but is
+  not going to enter Java 6.
+  For this reason Juglr ships a stand alone jsr166.jar as found
+  on http://gee.cs.oswego.edu/dl/concurrency-interest/index.html.
+  Since JSR166 adds classes to the java namespace you have to
+  include it in your boot classpath with -Xbootclasspath/p:jsr166.jar
+  when using Juglr with Java 6.
+
+  PROJECT HOSTING
+  The Juglr project is currently hosted on Gitorious:
+
+    http://gitorious.org/juglr
+

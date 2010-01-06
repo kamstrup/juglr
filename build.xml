@@ -78,6 +78,9 @@
         <delete dir="${dist.dir}"/>
         <delete dir="${apidocs.dir}"/>
         <delete dir="${tmp.dir}"/>
+        <delete>
+            <fileset dir="${examples.dir}" includes="*.class"/>
+        </delete>
     </target>
 
     <target name="compile" depends="prepare">
@@ -125,6 +128,7 @@
             <zipfileset prefix="${prefix}" file="LICENSE"/>
             <zipfileset prefix="${prefix}" file="NEWS"/>
             <zipfileset prefix="${prefix}/doc" includes="**/*" dir="${root.doc.dir}"/>
+            <zipfileset prefix="${prefix}/examples" dir="${examples.dir}"/>
             <zipfileset prefix="${prefix}" file="${release}.jar"/>
             <zipfileset prefix="${prefix}" file="ChangeLog"/>
         </zip>

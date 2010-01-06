@@ -7,7 +7,9 @@ FOR 0.1
 
  * Be able to unsubscribe from well known address
 
- * Bridge HTTP methods to native MB methods in HTTPMessageBus 
+ * Bridge HTTP methods to native MB methods in HTTPMessageBus
+
+ * Make sure Actor.start() is called from a sync context 
 
 FOR 0.2
 -------

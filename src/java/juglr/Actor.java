@@ -30,7 +30,14 @@ import java.util.concurrent.locks.ReentrantLock;
  * {@link #react} and {@link #start}. As a rule of thumb these methods should
  * never block in order not to starvate the underlying threadpool of the
  * message bus. There are two legal ways for an actor to block, notably
- * {@link #awaitMessage()} and {@link #await(Callable)}
+ * {@link #awaitMessage()} and {@link #await(Callable)}.
+ * <p/>
+ * <h3>Parallelizing Work</h3>
+ * Each actor is guaranteed to only be handling one message at a time.
+ * In technical terms this means that {@link #react(Message)} is guaranteed to
+ * be called from within a synchronized context. Juglr provides some helper
+ * classes for parallelizing work, namely {@link SwarmActor} and
+ * {@link MulticastActor}.
  */
 public abstract class Actor {    
 
@@ -71,8 +78,20 @@ public abstract class Actor {
     }
 
     /**
-     * Returns {@code null} if interrupted
-     * @return
+     * Block until a message is received and return the message. The blocking is
+     * done in a manner where the thread pool of the message bus does not risk
+     * starvation.
+     * <p/>
+     * This method must only be called within the {@link #react} and
+     * {@link #start} methods of the actor. 
+     * <p/>
+     * In general it is most effective to not use this method and simply
+     * rely on {@link #react} and some sort of state machine. However there
+     * are cases where the business logic becomes complex or where optimal
+     * performance is less important.
+     *
+     * @return the newly arrived message or {@code null} in case the actor was
+     *         interrupted while waiting for a message
      */
     public final Message awaitMessage () {
         if (messageBlocker == null) {
@@ -111,6 +130,9 @@ public abstract class Actor {
      * Do a blocking call and return its value. This is useful for doing
      * IO or other blocking operations. The blocking will be done in a manner
      * such that the thread pool of the message bus will not be affected.
+     * <p/>
+     * This method must only be called within the {@link #react} and
+     * {@link #start} methods of the actor.
      * <p/>
      * If you need to do a lot of blocking operations consider batching them
      * into one call to this method. Ie. don't read 128 bit blocks from a file
@@ -171,7 +193,8 @@ public abstract class Actor {
 
     /**
      * Initiate the actor life cycle, you may start sending messages from
-     * within this method
+     * within this method. This method is guaranteed to be run
+     * in a calling context synchronized on this actor.
      */
     public void start() {
         // Default impl does nothing
@@ -180,11 +203,17 @@ public abstract class Actor {
     /**
      * Primary method for handling incoming messages, override it with
      * your message handling logic. This method is guaranteed to be run
-     * in a calling context synchronized on this actor.
+     * in a calling context synchronized on this actor. In effect this means
+     * that actors only handle one message at a time. For a discussion on how
+     * to parallelize message processing see the section in the class
+     * documentation.
      * <p/>
      * You can await messages from withing this method by calling
      * {@link #awaitMessage()}. To prepare for handling the next message
      * in a clean context simply return from this method call.
+     * <p/>
+     * Blocking operations, such as IO, should be done within an
+     * {@link #await(Callable)} call.
      *
      * @param msg the incoming message
      */

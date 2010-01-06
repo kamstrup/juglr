@@ -1,8 +1,17 @@
-package juglr;
-
 /**
+ * Example class demonstrating a named actor.
+ * Compile with:
+ *     javac -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar NamingExample.java
  *
+ * Run with:
+ *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar:. NamingExample
  */
+import juglr.Actor;
+import juglr.Address;
+import juglr.AddressAlreadyOwnedException;
+import juglr.Message;
+import juglr.StructuredMessage;
+
 public class NamingExample {
 
     private static class NamedActor extends Actor {
@@ -25,7 +34,7 @@ public class NamingExample {
 
         @Override
         public void start() {
-            Address carmen = getBus().lookup("CarmenSandiego");
+            Address carmen = getBus().lookup("/CarmenSandiego");
             send(new StructuredMessage("Where are you?"), carmen);
         }
 

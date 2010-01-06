@@ -143,6 +143,9 @@ public class MessageBus {
     }
 
     public void send(Message msg, Address recipient) {
+        if (recipient == null) {
+            throw new NullPointerException("Recipient address is null");
+        }
         pool.submit(new ForkJoinMessageClosure(this, msg, recipient));
     }
 

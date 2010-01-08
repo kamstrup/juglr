@@ -11,7 +11,14 @@ import java.nio.channels.SocketChannel;
 
 /**
  * A simple example that uses a HTTPMessageBus to expose a service that
- * calculates whether or not a given number is a prime.
+ * calculates whether or not a given number is a prime. Workload is spead
+ * over three parallel calculators.
+ * <p/>
+ * Compile with:
+ *     javac -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar HTTPServerExample.java
+ *
+ * Run with:
+ *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar:. HTTPServerExample
  * <p/>
  * JSON messages should be <code>POST</code>ed to
  * <a href="http://localhost:4567/actor/calc">http://localhost:4567/calc</a>
@@ -25,20 +32,18 @@ import java.nio.channels.SocketChannel;
  * To invoke the 'list' or 'ping' handlers you can point your browser at
  * <a href="http://localhost:4567/list">http://localhost:4567/list</a> or
  * <a href="http://localhost:4567/ping/calc">http://localhost:4567/ping/calc</a>.
- * Or simply use a command line tool like <code>wget</code> to send
- * <code>GET</code> requests to those URLs.
+ * Or simply use a command line tool like <code>wget</code> or <code>curl</code>
+ * to send <code>GET</code> requests to those URLs.
+ * <p/>
+ * To POST an isPrime request using <code>curl</code> use the following command
+ * in a Unix terminal:
+ * <pre>
+ *     curl http://localhost:4567/actor/calc --data '{ "isPrime" : 982451653 }'
+ * </pre>
  */
 public class HTTPServerExample {
 
     static class CalcActor extends Actor {
-
-        public void start() {
-            try {
-                getBus().allocateNamedAddress(this, "calc");
-            } catch (AddressAlreadyOwnedException e) {
-                e.printStackTrace();
-            }
-        }
 
         public void react(Message msg) {
             if (!(msg instanceof StructuredMessage)) {
@@ -52,12 +57,12 @@ public class HTTPServerExample {
                 send(resp, msg.getSender());
                 return;
             }
-            String test = json.get("isPrime").toString();
 
+            String test = json.get("isPrime").toString();
             try {
                 BigInteger bigInt = new BigInteger(test);
 
-                // We guess right with 0.9990234375 probab
+                // We guess right with 0.9990234375 probability
                 if (bigInt.isProbablePrime(10)) {
                     resp.put("response", "true");
                 } else {
@@ -67,18 +72,23 @@ public class HTTPServerExample {
             } catch (NumberFormatException e) {
                 resp.put("error", "Not a valid integer");
                 send(resp, msg.getSender());
-                return;
             }
         }
     }
 
     public static void main (String[] args) throws Exception {
+        // Make sure the default message bus is HTTPMessageBus
         System.setProperty("juglr.busclass", "juglr.net.HTTPMessageBus");
-        Actor actor = new CalcActor();
+
+        // Delegate work to three CalcActors in a round-robin manner
+        Actor actor = new SwarmActor(
+                new CalcActor(), new CalcActor(), new CalcActor());
+        MessageBus.getDefault().allocateNamedAddress(actor, "calc");
         MessageBus.getDefault().start(actor.getAddress());
 
+        // Indefinite non-busy block
         synchronized (actor) {
-            actor.wait(); // Indefinte non-busy block
+            actor.wait();
         }
     }
 

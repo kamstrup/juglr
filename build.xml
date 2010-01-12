@@ -82,6 +82,7 @@
         <delete>
             <fileset dir="${examples.dir}" includes="*.class"/>
         </delete>
+        <delete file="${release}.jar"/>
     </target>
 
     <target name="compile" depends="prepare">

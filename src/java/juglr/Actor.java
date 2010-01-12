@@ -162,6 +162,31 @@ public abstract class Actor {
     }
 
     /**
+     * Sleep for {@code millis} milliseconds and resume operation. The blocking
+     * is done in a cooperative manner and the thread pool of the message bus
+     * will not be starved because of threads blocking on {@code awaitTimeout}.
+     *
+     * @param millis number of milliseconds to sleep
+     * @throws InterruptedException if interruped while sleeping
+     */
+    public void awaitTimeout(final long millis) throws InterruptedException {
+        ManagedBlocker blocker = new ManagedBlocker() {
+            private boolean hasSlept = false;
+            public boolean block() throws InterruptedException {
+                hasSlept = true; // First set this in case of interrupts
+                Thread.sleep(millis);
+                return isReleasable();
+            }
+
+            public boolean isReleasable() {
+                return hasSlept;
+            }
+        };
+
+        ForkJoinPool.managedBlock(blocker, true);
+    }
+
+    /**
      * This method ensures that access to react() is always synchronized
      * @param msg the message to invoke react() on
      */

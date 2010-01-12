@@ -17,6 +17,7 @@
     <property name="test.src.dir" value="${root.src.dir}/test"/>
     <property name="examples.dir" value="${basedir}/examples"/>
     <property name="root.doc.dir" value="${basedir}/doc"/>
+    <property name="lib.dir" value="${basedir}/lib"/>
 
     <!-- Temporary files and directories-->
     <property name="build.dir" value="${basedir}/classes"/>
@@ -127,10 +128,11 @@
             <zipfileset prefix="${prefix}" file="NOTICE"/>
             <zipfileset prefix="${prefix}" file="LICENSE"/>
             <zipfileset prefix="${prefix}" file="NEWS"/>
+            <zipfileset prefix="${prefix}" file="ChangeLog"/>
             <zipfileset prefix="${prefix}/doc" includes="**/*" dir="${root.doc.dir}"/>
             <zipfileset prefix="${prefix}/examples" dir="${examples.dir}"/>
+            <zipfileset prefix="${prefix}/lib" dir="${lib.dir}" includes="*.jar"/>
             <zipfileset prefix="${prefix}" file="${release}.jar"/>
-            <zipfileset prefix="${prefix}" file="ChangeLog"/>
         </zip>
         <copy file="${release}.jar" todir="${dist.dir}"/>
         <copy file="ChangeLog" todir="${dist.dir}"/>
@@ -185,6 +187,7 @@
         <zip destfile="${dist.dir}/${release.src.zip}">
             <zipfileset prefix="${prefix}/src" dir="${root.src.dir}"/>
             <zipfileset prefix="${prefix}/examples" dir="${examples.dir}"/>
+            <zipfileset prefix="${prefix}/lib" dir="${lib.dir}" includes="*.jar"/>
             <zipfileset prefix="${prefix}" file="build.xml"/>
             <zipfileset prefix="${prefix}" file="README"/>
             <zipfileset prefix="${prefix}" file="MAINTAINERS"/>

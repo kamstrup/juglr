@@ -116,12 +116,12 @@ public class HTTPMessageBus extends MessageBus {
                 /* The backend actor should send a SM back to us */
                 @Override
                 public void react(Message msg) {
-                    if (!(msg instanceof StructuredMessage)) {
+                    if (!(msg instanceof Box)) {
                         throw new MessageFormatException(
-                                                  "Expected StructuredMessage");
+                                                  "Expected Box");
                     }
 
-                    StructuredMessage _msg = (StructuredMessage)msg;
+                    Box _msg = (Box)msg;
                     HTTP.Status status;
                     if (_msg.has("__httpStatusCode__")) {
                         status = HTTP.Status.fromHttpOrdinal(
@@ -182,7 +182,7 @@ public class HTTPMessageBus extends MessageBus {
                 }
 
                 /* Send a response msg to the client and shut down the actor */
-                private void respond(HTTP.Status status, StructuredMessage msg)
+                private void respond(HTTP.Status status, Box msg)
                                                             throws IOException {
                     try{
                         String msgString = msg.toString();
@@ -202,7 +202,7 @@ public class HTTPMessageBus extends MessageBus {
                 /* Send an error to the client and shut down the actor */
                 private void respondError(HTTP.Status status, String msg)
                                                             throws IOException {
-                    StructuredMessage resp = StructuredMessage.newMap();
+                    Box resp = Box.newMap();
                     respond(status, resp.put("error", msg));
                 }
 
@@ -234,7 +234,7 @@ public class HTTPMessageBus extends MessageBus {
                                 return;
                             }
 
-                            StructuredMessage msg;
+                            Box msg;
                             try {
                                 msg = msgParser.parse(msgBody);
                             } catch (MessageFormatException e) {
@@ -252,7 +252,7 @@ public class HTTPMessageBus extends MessageBus {
                                     method, HTTP.Method.GET, Handler.LIST)) {
                                 return;
                             }
-                            StructuredMessage ls = StructuredMessage.newList();
+                            Box ls = Box.newList();
                             Iterator<Address> iter = list();
                             while (iter.hasNext()) {
                                 ls.add(iter.next().externalize());
@@ -271,7 +271,7 @@ public class HTTPMessageBus extends MessageBus {
                                 return;
                             } else {
                                 respond(HTTP.Status.OK,
-                                        new StructuredMessage(
+                                        new Box(
                                                 recipient + " says hi!"));
                             }
                             break;

@@ -22,7 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p/>
  * Although the standard {@link Message} class can indeed hold shared state it
  * is strongly advised to avoid this. One way assert that there is no shared
- * state is to only use {@link StructuredMessage}s which can only store
+ * state is to only use {@link Box}s which can only store
  * simply data types (and also have the added benefit of mapping cleanly to
  * JSON).
  * <p/>

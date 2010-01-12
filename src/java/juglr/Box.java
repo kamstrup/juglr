@@ -4,13 +4,13 @@ import java.util.*;
 import java.io.Serializable;
 
 /**
- * A StructuredMessage is a (possible nested) map of String keys to simple data types,
+ * A Box is a (possible nested) map of String keys to simple data types,
  * other StructuredMessages, or ordered lists of any of these.
  * <p/>
- * A StructuredMessage is the main atom of communication in PutIt.
+ * A Box is the main atom of communication in PutIt.
  *
  */
-public class StructuredMessage extends Message implements Serializable {
+public class Box extends Message implements Serializable {
 
     public enum Type {
         INT,
@@ -30,7 +30,7 @@ public class StructuredMessage extends Message implements Serializable {
     private Type type;
     private Serializable val;
 
-    public StructuredMessage(Type type) {
+    public Box(Type type) {
         this.type = type;
 
         switch (type) {
@@ -44,10 +44,10 @@ public class StructuredMessage extends Message implements Serializable {
                 val = 0D;
                 break;
             case LIST:
-                val = new ArrayList<StructuredMessage>();
+                val = new ArrayList<Box>();
                 break;
             case MAP:
-                val = new HashMap<String,StructuredMessage>();
+                val = new HashMap<String, Box>();
                 break;
             case STRING:
                 val = "";
@@ -55,42 +55,42 @@ public class StructuredMessage extends Message implements Serializable {
         }
     }
 
-    public StructuredMessage(long val) {
+    public Box(long val) {
         type = Type.INT;
         this.val = val;
     }
 
-    public StructuredMessage(double val) {
+    public Box(double val) {
         type = Type.FLOAT;
         this.val = val;
     }
 
-    public StructuredMessage(boolean val) {
+    public Box(boolean val) {
         type = Type.BOOLEAN;
         this.val = val;
     }
 
-    public StructuredMessage(String val) {
+    public Box(String val) {
         type = Type.STRING;
         this.val = val;
     }
 
-    public StructuredMessage(List<StructuredMessage> val) {
+    public Box(List<Box> val) {
         this.type = Type.LIST;
-        this.val = new ArrayList<StructuredMessage>(val);
+        this.val = new ArrayList<Box>(val);
     }
 
-    public StructuredMessage(Map<String,StructuredMessage> val) {
+    public Box(Map<String, Box> val) {
         this.type = Type.LIST;
-        this.val = new HashMap<String,StructuredMessage>(val);
+        this.val = new HashMap<String, Box>(val);
     }
 
-    public static StructuredMessage newList() {
-        return new StructuredMessage(Type.LIST);
+    public static Box newList() {
+        return new Box(Type.LIST);
     }
 
-    public static StructuredMessage newMap() {
-        return new StructuredMessage(Type.MAP);
+    public static Box newMap() {
+        return new Box(Type.MAP);
     }
 
     public Type getType() {
@@ -118,105 +118,105 @@ public class StructuredMessage extends Message implements Serializable {
     }
 
     /**
-     * Add a child StructuredMessage to a StructuredMessage of LIST type. This method always returns
+     * Add a child Box to a Box of LIST type. This method always returns
      * {@code this}.
-     * @param msg the StructuredMessage to append
+     * @param msg the Box to append
      * @return {@code this}
      */
     @SuppressWarnings("unchecked")
-    public StructuredMessage add(StructuredMessage msg) {
+    public Box add(Box msg) {
         checkType(Type.LIST);
-        ((List<StructuredMessage>)val).add(msg);
+        ((List<Box>)val).add(msg);
         return this;
     }
 
-    public StructuredMessage add(long val) {
-        return add(new StructuredMessage(val));
+    public Box add(long val) {
+        return add(new Box(val));
     }
 
-    public StructuredMessage add(double val) {
-        return add(new StructuredMessage(val));
+    public Box add(double val) {
+        return add(new Box(val));
     }
 
-    public StructuredMessage add(boolean val) {
-        return add(new StructuredMessage(val));
+    public Box add(boolean val) {
+        return add(new Box(val));
     }
 
-    public StructuredMessage add(String val) {
-        return add(new StructuredMessage(val));
+    public Box add(String val) {
+        return add(new Box(val));
     }
 
-    public StructuredMessage add(List<StructuredMessage> val) {
-        return add(new StructuredMessage(val));
+    public Box add(List<Box> val) {
+        return add(new Box(val));
     }
 
-    public StructuredMessage add(Map<String,StructuredMessage> val) {
-        return add(new StructuredMessage(val));
+    public Box add(Map<String, Box> val) {
+        return add(new Box(val));
     }
 
     /**
-     * Add a collection of child StructuredMessages to a StructuredMessage of LIST type.
+     * Add a collection of child StructuredMessages to a Box of LIST type.
      * This method always returns {@code this}.
      * @param msgList the collection of StructuredMessages to append
      * @return {@code this}
      */
     @SuppressWarnings("unchecked")
-    public StructuredMessage addAll(Collection<StructuredMessage> msgList) {
+    public Box addAll(Collection<Box> msgList) {
         checkType(Type.LIST);
-        ((List<StructuredMessage>)val).addAll(msgList);
+        ((List<Box>)val).addAll(msgList);
         return this;
     }
 
     /**
-     * Associate a key String with a child StructuredMessage inside a StructuredMessage of
+     * Associate a key String with a child Box inside a Box of
      * LIST type.
      * This method always returns {@code this}.
      * @param key the key to add {@code val} under
-     * @param val the StructuredMessage to associate with {@code key}
+     * @param val the Box to associate with {@code key}
      * @return {@code this}
      */
     @SuppressWarnings("unchecked")
-    public StructuredMessage put(String key, StructuredMessage val) {
+    public Box put(String key, Box val) {
         checkType(Type.MAP);
-        ((Map<String,StructuredMessage>)this.val).put(key,val);
+        ((Map<String, Box>)this.val).put(key,val);
         return this;
     }
 
-    public StructuredMessage put(String key, long val) {
-        return put(key, new StructuredMessage(val));
+    public Box put(String key, long val) {
+        return put(key, new Box(val));
     }
 
-    public StructuredMessage put(String key, double val) {
-        return put(key, new StructuredMessage(val));
+    public Box put(String key, double val) {
+        return put(key, new Box(val));
     }
 
-    public StructuredMessage put(String key, boolean val) {
-        return put(key, new StructuredMessage(val));
+    public Box put(String key, boolean val) {
+        return put(key, new Box(val));
     }
 
-    public StructuredMessage put(String key, String val) {
-        return put(key, new StructuredMessage(val));
+    public Box put(String key, String val) {
+        return put(key, new Box(val));
     }
 
-    public StructuredMessage put(String key, List<StructuredMessage> val) {
-        return put(key, new StructuredMessage(val));
+    public Box put(String key, List<Box> val) {
+        return put(key, new Box(val));
     }
 
-    public StructuredMessage put(String key, Map<String,StructuredMessage> val) {
-        return put(key, new StructuredMessage(val));
+    public Box put(String key, Map<String, Box> val) {
+        return put(key, new Box(val));
     }
 
     /**
-     * Import all key-value pairs from {@code map} into this StructuredMessage (which
+     * Import all key-value pairs from {@code map} into this Box (which
      * must be of the MAP type).
      * This method always returns {@code this}.
      * @param map a
      * @return {@code this}
      */
     @SuppressWarnings("unchecked")
-    public StructuredMessage putAll(Map<String,StructuredMessage> map) {
+    public Box putAll(Map<String, Box> map) {
         checkType(Type.MAP);
-        ((Map<String,StructuredMessage>)val).putAll(map);
+        ((Map<String, Box>)val).putAll(map);
         return this;
     }
 
@@ -245,39 +245,39 @@ public class StructuredMessage extends Message implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    public List<StructuredMessage> getList() {
+    public List<Box> getList() {
         checkType(Type.LIST);
-        return (List<StructuredMessage>)val;
+        return (List<Box>)val;
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String,StructuredMessage> getMap() {
+    public Map<String, Box> getMap() {
         checkType(Type.MAP);
-        return (Map<String,StructuredMessage>)val;
+        return (Map<String, Box>)val;
     }
 
     /**
-     * Get the StructuredMessage at {@code index} from a StructuredMessage of LIST type.
+     * Get the Box at {@code index} from a Box of LIST type.
      * @param index the index into the list from which to retrieve the child
-     *              StructuredMessage
-     * @return the StructuredMessage at {@code index}
+     *              Box
+     * @return the Box at {@code index}
      */
-    public StructuredMessage get(int index) {
+    public Box get(int index) {
         return getList().get(index);
     }
 
     /**
-     * Retrieve a child StructuredMessage with key {@code key} from a StructuredMessage of
+     * Retrieve a child Box with key {@code key} from a Box of
      * MAP type.
-     * @param key the key for the child StructuredMessage to look up
-     * @return the child StructuredMessage or {@code null}
+     * @param key the key for the child Box to look up
+     * @return the child Box or {@code null}
      */
-    public StructuredMessage get(String key) {
+    public Box get(String key) {
         return getMap().get(key);
     }
 
     /**
-     * Return the number of immediate child StructuredMessages of this StructuredMessage
+     * Return the number of immediate child StructuredMessages of this Box
      * @return The number of child StructuredMessages. This will be 0 for all StructuredMessages
      *         that are not of the types MAP or LIST
      */
@@ -293,38 +293,38 @@ public class StructuredMessage extends Message implements Serializable {
     }
 
     /**
-     * Assert that this StructuredMessage is of type {@code t} and throw a
+     * Assert that this Box is of type {@code t} and throw a
      * {@link MessageTypeException} if it is not.
-     * @param t the type that this StructuredMessage must be
+     * @param t the type that this Box must be
      */
     public void checkType(Type t) {
         if (t != type) {
             throw new MessageTypeException(
-                   "StructuredMessage of type " + type + ", but expected " + t);
+                   "Box of type " + type + ", but expected " + t);
         }
     }
 
     /**
-     * Assert that the StructuredMessage {@code m} is of type {@code t} and throw a
+     * Assert that the Box {@code m} is of type {@code t} and throw a
      * {@link MessageTypeException} if it is not.
-     * @param m the StructuredMessage to check the type of
-     * @param t the type that this StructuredMessage must be
+     * @param m the Box to check the type of
+     * @param t the type that this Box must be
      */
-    public static void checkType(StructuredMessage m, Type t) {
+    public static void checkType(Box m, Type t) {
         if (t != m.getType()) {
             throw new MessageTypeException(
-                    "StructuredMessage of type " + m.getType()
+                    "Box of type " + m.getType()
                             + ", but expected " + t);
         }
     }
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof StructuredMessage)) {
+        if (!(o instanceof Box)) {
             return false;
         }
 
-        StructuredMessage m = (StructuredMessage)o;
+        Box m = (Box)o;
 
         if (type != m.getType()) {
             return false;
@@ -338,8 +338,8 @@ public class StructuredMessage extends Message implements Serializable {
             case INT:
                 return getLong() == m.getLong();
             case LIST:
-                List<StructuredMessage> us = getList();
-                List<StructuredMessage> them = m.getList();
+                List<Box> us = getList();
+                List<Box> them = m.getList();
                 if (us.size() != them.size()) {
                     return false;
                 }
@@ -350,8 +350,8 @@ public class StructuredMessage extends Message implements Serializable {
                 }
                 return true;
             case MAP:
-                Map<String,StructuredMessage> usM = getMap();
-                Map<String,StructuredMessage> themM = m.getMap();
+                Map<String, Box> usM = getMap();
+                Map<String, Box> themM = m.getMap();
                 if (usM.size() != themM.size()) {
                     return false;
                 }

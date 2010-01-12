@@ -4,7 +4,7 @@ import java.io.Reader;
 
 /**
  * A Reader class that outputs a message as a character stream. You can save
- * system resources by invoking {@link #reset(StructuredMessage)} instead of
+ * system resources by invoking {@link #reset(Box)} instead of
  * creating new MessageReaders.
  */
 public abstract class MessageReader extends Reader {
@@ -12,9 +12,9 @@ public abstract class MessageReader extends Reader {
     /**
      * The message being serialized.
      */
-    protected StructuredMessage msg;
+    protected Box msg;
 
-    public MessageReader (StructuredMessage msg) {
+    public MessageReader (Box msg) {
         this.msg = msg;
     }
 
@@ -22,7 +22,7 @@ public abstract class MessageReader extends Reader {
      * Prepare the reader for serializing another message.
      * @param msg the message to serialize
      */
-    public abstract void reset(StructuredMessage msg);
+    public abstract void reset(Box msg);
 
     /**
      * Read the entire message an return it as a string

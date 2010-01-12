@@ -19,26 +19,26 @@ public class MessageParserTest {
 
         data.add(new Object[]{
                 "{}",
-                StructuredMessage.newMap()
+                Box.newMap()
         });
         data.add(new Object[]{
                 "{\"One\":1}",
-                StructuredMessage.newMap().put("One", new StructuredMessage(1))
+                Box.newMap().put("One", new Box(1))
         });
         data.add(new Object[]{
                 "{\"One\":1, \"bad\":false}",
-                StructuredMessage.newMap()
-                        .put("One", new StructuredMessage(1))
-                        .put("bad", new StructuredMessage(false))
+                Box.newMap()
+                        .put("One", new Box(1))
+                        .put("bad", new Box(false))
         });
         data.add(new Object[]{
                 "{\"bad\":false, \"list\":[27,68,true]}",
-                StructuredMessage.newMap()
-                        .put("bad", new StructuredMessage(false))
-                        .put("list", StructuredMessage.newList()
-                                              .add(new StructuredMessage(27))
-                                              .add(new StructuredMessage(68))
-                                              .add(new StructuredMessage(true)))
+                Box.newMap()
+                        .put("bad", new Box(false))
+                        .put("list", Box.newList()
+                                              .add(new Box(27))
+                                              .add(new Box(68))
+                                              .add(new Box(true)))
         });
 
         return data.iterator();
@@ -48,7 +48,7 @@ public class MessageParserTest {
     public void parseJSon(String json, Message expected) {
         MessageParser parser = new JSonMessageParser();
 
-        StructuredMessage result = parser.parse(json);
+        Box result = parser.parse(json);
         assertEquals(result,expected);
 
     }

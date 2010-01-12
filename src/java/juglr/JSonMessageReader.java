@@ -6,23 +6,23 @@ import java.util.Map;
 /**
  * Serialize a {@link Message} object to JSON. To save system resources you can
  * reuse the same JSonMessageReader by calling
- * {@link #reset(StructuredMessage)} when starting the serialization of a
+ * {@link #reset(Box)} when starting the serialization of a
  * new message.
  */
 public class JSonMessageReader extends MessageReader {
 
-    private StructuredMessage next;
+    private Box next;
     private StringBuilder buf;
     private int cursor;
 
-    public JSonMessageReader(StructuredMessage msg) {
+    public JSonMessageReader(Box msg) {
         super(msg);
         buf = new StringBuilder();
         reset(msg);
     }
 
     @Override
-    public void reset(StructuredMessage msg) {
+    public void reset(Box msg) {
         if (msg == null) {
             throw new NullPointerException();
         }
@@ -76,7 +76,7 @@ public class JSonMessageReader extends MessageReader {
         buf = null;
     }
 
-    private void appendStructuredMessage(StructuredMessage m) {
+    private void appendStructuredMessage(Box m) {
         switch (m.getType()) {
             case INT:
                 buf.append(m.getLong());
@@ -90,7 +90,7 @@ public class JSonMessageReader extends MessageReader {
             case LIST:
                 buf.append('[');
                 boolean first = true;
-                for (StructuredMessage child : m.getList()) {
+                for (Box child : m.getList()) {
                     if (first) {
                         first = false;
                     } else {
@@ -103,7 +103,7 @@ public class JSonMessageReader extends MessageReader {
             case MAP:
                 buf.append('{');
                 first = true;
-                for (Map.Entry<String,StructuredMessage> entry : m.getMap().entrySet()) {
+                for (Map.Entry<String, Box> entry : m.getMap().entrySet()) {
                     if (first) {
                         first = false;
                     } else {

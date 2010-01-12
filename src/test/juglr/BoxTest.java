@@ -5,7 +5,7 @@ import org.testng.annotations.DataProvider;
 import java.util.*;
 
 import org.testng.annotations.Test;
-import org.testng.annotations.DataProvider;
+
 import static org.testng.Assert.*;
 
 import java.util.Iterator;
@@ -13,7 +13,7 @@ import java.util.Iterator;
 /**
  * Test cases for the Message class
  */
-public class StructuredMessageTest {
+public class BoxTest {
 
     @DataProvider(name="ints")
     public Iterator<Object[]> createInts() {
@@ -56,58 +56,58 @@ public class StructuredMessageTest {
 
     @Test(dataProvider="ints")
     public void intTypes1 (int val) {
-        StructuredMessage m = new StructuredMessage(val);
-        assert m.getType() == StructuredMessage.Type.INT;
+        Box m = new Box(val);
+        assert m.getType() == Box.Type.INT;
         assert m.getLong() == val;
     }
 
     @Test(dataProvider="longs")
     public void intTypes2 (long val) {
-        StructuredMessage m = new StructuredMessage(val);
-        assert m.getType() == StructuredMessage.Type.INT;
+        Box m = new Box(val);
+        assert m.getType() == Box.Type.INT;
         assert m.getLong() == val;
     }
 
     @Test(dataProvider="strings")
     public void stringTypes1 (String val) {
-        StructuredMessage m = new StructuredMessage(val);
-        assert m.getType() == StructuredMessage.Type.STRING;
+        Box m = new Box(val);
+        assert m.getType() == Box.Type.STRING;
         assert m.getString().equals(val);
     }
 
     @Test
     public void stringConversion() {
-        assertEquals(new StructuredMessage("foo").toString(), "\"foo\"");
-        assertEquals(new StructuredMessage("").toString(), "\"\"");
-        assertEquals(new StructuredMessage("# foo --* ").toString(), "\"# foo --* \"");
+        assertEquals(new Box("foo").toString(), "\"foo\"");
+        assertEquals(new Box("").toString(), "\"\"");
+        assertEquals(new Box("# foo --* ").toString(), "\"# foo --* \"");
 
-        assertEquals(new StructuredMessage(1).toString(), "1");
-        assertEquals(new StructuredMessage(-1).toString(), "-1");
-        assertEquals(new StructuredMessage(0).toString(), "0");
+        assertEquals(new Box(1).toString(), "1");
+        assertEquals(new Box(-1).toString(), "-1");
+        assertEquals(new Box(0).toString(), "0");
 
-        assertEquals(new StructuredMessage(1L).toString(), "1");
-        assertEquals(new StructuredMessage(-1L).toString(), "-1");
-        assertEquals(new StructuredMessage(0L).toString(), "0");
+        assertEquals(new Box(1L).toString(), "1");
+        assertEquals(new Box(-1L).toString(), "-1");
+        assertEquals(new Box(0L).toString(), "0");
 
-        assertEquals(new StructuredMessage(1.1D).toString(), "1.1");
-        assertEquals(new StructuredMessage(0D).toString(), "0.0");
+        assertEquals(new Box(1.1D).toString(), "1.1");
+        assertEquals(new Box(0D).toString(), "0.0");
 
-        assertEquals(StructuredMessage.newList().toString(), "[]");
-        assertEquals(StructuredMessage.newList()
-                                      .add(new StructuredMessage(1))
+        assertEquals(Box.newList().toString(), "[]");
+        assertEquals(Box.newList()
+                                      .add(new Box(1))
                                       .toString(), "[1]");
-        assertEquals(StructuredMessage.newList()
-                                      .add(new StructuredMessage(1))
-                                      .add(new StructuredMessage("foo"))
+        assertEquals(Box.newList()
+                                      .add(new Box(1))
+                                      .add(new Box("foo"))
                                       .toString(), "[1,\"foo\"]");
 
-        assertEquals(StructuredMessage.newMap().toString(), "{}");
-        assertEquals(StructuredMessage.newMap()
-                                      .put("one", new StructuredMessage(1))
+        assertEquals(Box.newMap().toString(), "{}");
+        assertEquals(Box.newMap()
+                                      .put("one", new Box(1))
                                       .toString(), "{\"one\":1}");
-        assertEquals(StructuredMessage.newMap()
-                                      .put("one", new StructuredMessage(1))
-                                      .put("bar", new StructuredMessage("foo"))
+        assertEquals(Box.newMap()
+                                      .put("one", new Box(1))
+                                      .put("bar", new Box("foo"))
                                       .toString(), "{\"one\":1,\"bar\":\"foo\"}");
     }
 }

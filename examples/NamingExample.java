@@ -10,7 +10,7 @@ import juglr.Actor;
 import juglr.Address;
 import juglr.AddressAlreadyOwnedException;
 import juglr.Message;
-import juglr.StructuredMessage;
+import juglr.Box;
 
 public class NamingExample {
 
@@ -26,7 +26,7 @@ public class NamingExample {
 
         @Override
         public void react(Message msg) {
-            send(new StructuredMessage("You found me!"), msg.getSender());
+            send(new Box("You found me!"), msg.getSender());
         }
     }
 
@@ -35,7 +35,7 @@ public class NamingExample {
         @Override
         public void start() {
             Address carmen = getBus().lookup("/CarmenSandiego");
-            send(new StructuredMessage("Where are you?"), carmen);
+            send(new Box("Where are you?"), carmen);
         }
 
         @Override

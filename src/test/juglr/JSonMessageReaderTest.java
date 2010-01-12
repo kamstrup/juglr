@@ -21,62 +21,62 @@ public class JSonMessageReaderTest {
 
         /* Strings */
         messages.add(new Object[]{
-                         new StructuredMessage(""),
+                         new Box(""),
                          "\"\""});
         messages.add(new Object[]{
-                         new StructuredMessage("Hello world "),
+                         new Box("Hello world "),
                          "\"Hello world \""});
         messages.add(new Object[]{
-                         new StructuredMessage("åæø"),
+                         new Box("åæø"),
                          "\"åæø\""});
 
         /* Ints/Longs */
         messages.add(new Object[]{
-                         new StructuredMessage(-1),
+                         new Box(-1),
                          "-1"});
         messages.add(new Object[]{
-                         new StructuredMessage(0),
+                         new Box(0),
                          "0"});
         messages.add(new Object[]{
-                         new StructuredMessage(1),
+                         new Box(1),
                          "1"});
         messages.add(new Object[]{
-                         new StructuredMessage(Integer.MAX_VALUE),
+                         new Box(Integer.MAX_VALUE),
                          "" + Integer.MAX_VALUE});
         messages.add(new Object[]{
-                         new StructuredMessage(Integer.MIN_VALUE),
+                         new Box(Integer.MIN_VALUE),
                          "" + Integer.MIN_VALUE});
         messages.add(new Object[]{
-                         new StructuredMessage(Long.MAX_VALUE),
+                         new Box(Long.MAX_VALUE),
                          "" + Long.MAX_VALUE});
         messages.add(new Object[]{
-                         new StructuredMessage(Long.MIN_VALUE),
+                         new Box(Long.MIN_VALUE),
                          "" + Long.MIN_VALUE});
 
         /* Booleans */
         messages.add(new Object[]{
-                         new StructuredMessage(true),
+                         new Box(true),
                          "true"});
         messages.add(new Object[]{
-                         new StructuredMessage(false),
+                         new Box(false),
                          "false"});
 
         /* Float/Double */
         messages.add(new Object[]{
-                         new StructuredMessage(0D),
+                         new Box(0D),
                          "" + 0D});
         messages.add(new Object[]{
-                         new StructuredMessage(-1D),
+                         new Box(-1D),
                          "" + -1D});
         messages.add(new Object[]{
-                         new StructuredMessage(1D),
+                         new Box(1D),
                          "" + 1D});
 
         return messages.iterator();
     }
 
     @Test(dataProvider="simple")
-    public void cmpSimpleMsg2JS(StructuredMessage msg, String json) throws IOException {
+    public void cmpSimpleMsg2JS(Box msg, String json) throws IOException {
         Reader r = new JSonMessageReader(msg);
         assertEquals(readFully(r), json);
     }
@@ -86,44 +86,44 @@ public class JSonMessageReaderTest {
         List<Object[]> messages = new ArrayList<Object[]>();
 
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.LIST),
+                         new Box(Box.Type.LIST),
                          "[]"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.LIST).add(new StructuredMessage("")),
+                         new Box(Box.Type.LIST).add(new Box("")),
                          "[\"\"]"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.LIST)
-                                 .add(new StructuredMessage("Hello world")),
+                         new Box(Box.Type.LIST)
+                                 .add(new Box("Hello world")),
                          "[\"Hello world\"]"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.LIST)
-                                 .add(new StructuredMessage("Hello"))
-                                 .add(new StructuredMessage("world")),
+                         new Box(Box.Type.LIST)
+                                 .add(new Box("Hello"))
+                                 .add(new Box("world")),
                          "[\"Hello\",\"world\"]"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.LIST)
-                                 .add(new StructuredMessage(StructuredMessage.Type.LIST)),
+                         new Box(Box.Type.LIST)
+                                 .add(new Box(Box.Type.LIST)),
                          "[[]]"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.LIST)
-                                 .add(new StructuredMessage("One"))
-                                 .add(new StructuredMessage(1)),
+                         new Box(Box.Type.LIST)
+                                 .add(new Box("One"))
+                                 .add(new Box(1)),
                          "[\"One\",1]"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.LIST)
-                                 .add(new StructuredMessage(true)),
+                         new Box(Box.Type.LIST)
+                                 .add(new Box(true)),
                          "[true]"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.LIST)
-                                 .add(new StructuredMessage(1.1D))
-                                 .add(new StructuredMessage(StructuredMessage.Type.LIST)),
+                         new Box(Box.Type.LIST)
+                                 .add(new Box(1.1D))
+                                 .add(new Box(Box.Type.LIST)),
                          "["+1.1D+",[]]"});
 
         return messages.iterator();
     }
 
     @Test(dataProvider="list")
-    public void cmpListMsg2JS(StructuredMessage msg, String json) throws IOException {
+    public void cmpListMsg2JS(Box msg, String json) throws IOException {
         Reader r = new JSonMessageReader(msg);
         assertEquals(readFully(r), json);
     }
@@ -133,35 +133,35 @@ public class JSonMessageReaderTest {
         List<Object[]> messages = new ArrayList<Object[]>();
 
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.MAP),
+                         new Box(Box.Type.MAP),
                          "{}"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.MAP).put("",new StructuredMessage("")),
+                         new Box(Box.Type.MAP).put("",new Box("")),
                          "{\"\":\"\"}"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.MAP)
-                                 .put("Hello", new StructuredMessage("world")),
+                         new Box(Box.Type.MAP)
+                                 .put("Hello", new Box("world")),
                          "{\"Hello\":\"world\"}"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.MAP)
-                                 .put("One", new StructuredMessage(1)),
+                         new Box(Box.Type.MAP)
+                                 .put("One", new Box(1)),
                          "{\"One\":1}"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.MAP)
-                                 .put("One", new StructuredMessage(1))
-                                 .put("Two", new StructuredMessage(2))
-                                 .put("Three", new StructuredMessage(3)),
+                         new Box(Box.Type.MAP)
+                                 .put("One", new Box(1))
+                                 .put("Two", new Box(2))
+                                 .put("Three", new Box(3)),
                          "{\"Three\":3,\"One\":1,\"Two\":2}"});
         messages.add(new Object[]{
-                         new StructuredMessage(StructuredMessage.Type.MAP)
-                                 .put("map", new StructuredMessage(StructuredMessage.Type.MAP))
-                                 .put("bool", new StructuredMessage(false)),
+                         new Box(Box.Type.MAP)
+                                 .put("map", new Box(Box.Type.MAP))
+                                 .put("bool", new Box(false)),
                          "{\"map\":{},\"bool\":false}"});
         return messages.iterator();
     }
 
     @Test(dataProvider="map")
-    public void cmpMapMsg2JS(StructuredMessage msg, String json) throws IOException {
+    public void cmpMapMsg2JS(Box msg, String json) throws IOException {
         // FIXME: These comparisons depend on the internal Hash impl of Java
         Reader r = new JSonMessageReader(msg);
         assertEquals(readFully(r), json);

@@ -2,7 +2,7 @@ package juglr;
 
 /**
  * Abstract base class for all message types. It is recommended to use the
- * {@link StructuredMessage}  class to transfer messages between actors since
+ * {@link Box}  class to transfer messages between actors since
  * it guarantees "shared nothing" which is important in highly parallel
  * computation.
  * <p/>
@@ -11,7 +11,7 @@ package juglr;
  * this class to get what you need.
  *
  * @see Actor
- * @see StructuredMessage
+ * @see Box
  */
 public class Message {
 

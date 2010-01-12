@@ -1,11 +1,3 @@
-package juglr.net;
-
-import juglr.*;
-
-import static juglr.Box.Type;
-
-import java.math.BigInteger;
-
 /**
  * A simple example that uses a HTTPMessageBus to expose a service that
  * calculates whether or not a given number is a prime. Workload is spead
@@ -38,17 +30,26 @@ import java.math.BigInteger;
  *     curl http://localhost:4567/actor/calc --data '{ "isPrime" : 982451653 }'
  * </pre>
  */
+
+import juglr.*;
+import static juglr.net.HTTP.*;
+import static juglr.StructuredMessage.Type;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.channels.SocketChannel;
+
 public class HTTPServerExample {
 
     static class CalcActor extends Actor {
 
         public void react(Message msg) {
-            if (!(msg instanceof Box)) {
-                throw new MessageFormatException("Expected Box");
+            if (!(msg instanceof StructuredMessage)) {
+                throw new MessageFormatException("Expected StructuredMessage");
             }
 
-            Box resp = new Box(Type.MAP);
-            Box json = (Box)msg;
+            StructuredMessage resp = new StructuredMessage(Type.MAP);
+            StructuredMessage json = (StructuredMessage)msg;
             if (!json.has("isPrime")) {
                 resp.put("error", "No 'isPrime' key in request");
                 send(resp, msg.getSender());

@@ -4,11 +4,17 @@ import java.util.*;
 import java.io.Serializable;
 
 /**
- * A Box is a (possible nested) map of String keys to simple data types,
- * other StructuredMessages, or ordered lists of any of these.
+ * Recommended {@link Message} class for general purpose messaging.
+ * A Box is a value-like container type that can hold one of:
+ * <ul>
+ *   <li>A simple data type; integer, float, boolean, and string</li>
+ *   <li>A map of string keys to {@code Box}es</li>
+ *   <li>or a list of {@code Box}es</li>
+ * </ul>
+ * Box instances serialize cleanly and efficiently over streams, and Juglr
+ * bundles the classes {@link JSonMessageReader} and {@link JSonMessageParser}
+ * for this purpose. 
  * <p/>
- * A Box is the main atom of communication in PutIt.
- *
  */
 public class Box extends Message implements Serializable {
 
@@ -30,6 +36,10 @@ public class Box extends Message implements Serializable {
     private Type type;
     private Serializable val;
 
+    /**
+     * Create a Box to hold a value of type {@code type}
+     * @param type the value type to store in the box
+     */
     public Box(Type type) {
         this.type = type;
 
@@ -55,56 +65,114 @@ public class Box extends Message implements Serializable {
         }
     }
 
+    /**
+     * Create a Box to hold a {@code long}
+     * @param val the value to store in the box
+     */
     public Box(long val) {
         type = Type.INT;
         this.val = val;
     }
 
+    /**
+     * Create a Box to hold a {@code double}
+     * @param val the value to store in the box
+     */
     public Box(double val) {
         type = Type.FLOAT;
         this.val = val;
     }
 
+    /**
+     * Create a Box to hold a {@code boolean}
+     * @param val the value to store in the box
+     */
     public Box(boolean val) {
         type = Type.BOOLEAN;
         this.val = val;
     }
 
+    /**
+     * Create a Box to hold a {@code String}
+     * @param val the value to store in the box
+     */
     public Box(String val) {
         type = Type.STRING;
         this.val = val;
     }
 
+    /**
+     * Create a Box to hold a list of boxes
+     * @param val the value to store in the box
+     */
     public Box(List<Box> val) {
         this.type = Type.LIST;
         this.val = new ArrayList<Box>(val);
     }
 
+    /**
+     * Create a Box to hold a map of string keys to Box values
+     * @param val the value to store in the box
+     */
     public Box(Map<String, Box> val) {
         this.type = Type.LIST;
         this.val = new HashMap<String, Box>(val);
     }
 
+    /**
+     * Create a Box that holds an empty list
+     * @return a new box storing and empty list
+     */
     public static Box newList() {
         return new Box(Type.LIST);
     }
 
+    /**
+     * Create a Box that holds an empty map of string keys to Box values
+     * @return a box holding an empty map
+     */
     public static Box newMap() {
         return new Box(Type.MAP);
     }
 
+    /**
+     * Get the type of the value stored in the box
+     * @return the type of the value stored in the box
+     */
     public Type getType() {
         return type;
     }
 
+    /**
+     * Get the value type of the box stored at position {@code index} of this
+     * <i>list type</i> box.
+     * @param index the index into the list stored by this box
+     * @return the value type at position {@code index} of this box
+     * @throws MessageTypeException if {@code this} is not of type {@code LIST}
+     */
     public Type getType(int index) {
         return get(index).getType();
     }
 
+    /**
+     * Get the value type of the box stored with key {@code key} of this
+     * <i>map type</i> box.
+     * @param key check box with this key
+     * @return the value type for the child box corresponding to {@code key}
+     * @throws MessageTypeException if {@code this} is not of type {@code MAP}
+     * @throws NullPointerException if there is no box for {@code key}
+     */
     public Type getType(String key) {
         return get(key).getType();
     }
 
+    /**
+     * Check if this box of map type has a child for the key {@code key}
+     * @param key the key to check
+     * @return {@code true} if there is a box for the given key
+     * @throws MessageTypeException if {@code this} is not of type {@code MAP}
+     * @throws NullPointerException if there is no box for {@code key}
+     */
     public boolean has(String key) {
         return get(key) != null;
     }

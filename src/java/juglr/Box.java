@@ -27,8 +27,8 @@ public class Box extends Message implements Serializable {
         LIST
     }
 
-    public static class MessageTypeException extends RuntimeException {
-        public MessageTypeException(String msg) {
+    public static class TypeException extends RuntimeException {
+        public TypeException(String msg) {
             super(msg);
         }
     }
@@ -148,7 +148,7 @@ public class Box extends Message implements Serializable {
      * <i>list type</i> box.
      * @param index the index into the list stored by this box
      * @return the value type at position {@code index} of this box
-     * @throws MessageTypeException if {@code this} is not of type {@code LIST}
+     * @throws juglr.Box.TypeException if {@code this} is not of type {@code LIST}
      */
     public Type getType(int index) {
         return get(index).getType();
@@ -159,7 +159,7 @@ public class Box extends Message implements Serializable {
      * <i>map type</i> box.
      * @param key check box with this key
      * @return the value type for the child box corresponding to {@code key}
-     * @throws MessageTypeException if {@code this} is not of type {@code MAP}
+     * @throws juglr.Box.TypeException if {@code this} is not of type {@code MAP}
      * @throws NullPointerException if there is no box for {@code key}
      */
     public Type getType(String key) {
@@ -170,7 +170,7 @@ public class Box extends Message implements Serializable {
      * Check if this box of map type has a child for the key {@code key}
      * @param key the key to check
      * @return {@code true} if there is a box for the given key
-     * @throws MessageTypeException if {@code this} is not of type {@code MAP}
+     * @throws juglr.Box.TypeException if {@code this} is not of type {@code MAP}
      * @throws NullPointerException if there is no box for {@code key}
      */
     public boolean has(String key) {
@@ -362,25 +362,25 @@ public class Box extends Message implements Serializable {
 
     /**
      * Assert that this Box is of type {@code t} and throw a
-     * {@link MessageTypeException} if it is not.
+     * {@link juglr.Box.TypeException} if it is not.
      * @param t the type that this Box must be
      */
     public void checkType(Type t) {
         if (t != type) {
-            throw new MessageTypeException(
+            throw new TypeException(
                    "Box of type " + type + ", but expected " + t);
         }
     }
 
     /**
      * Assert that the Box {@code m} is of type {@code t} and throw a
-     * {@link MessageTypeException} if it is not.
+     * {@link juglr.Box.TypeException} if it is not.
      * @param m the Box to check the type of
      * @param t the type that this Box must be
      */
     public static void checkType(Box m, Type t) {
         if (t != m.getType()) {
-            throw new MessageTypeException(
+            throw new TypeException(
                     "Box of type " + m.getType()
                             + ", but expected " + t);
         }

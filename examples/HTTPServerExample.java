@@ -33,7 +33,7 @@
 
 import juglr.*;
 import static juglr.net.HTTP.*;
-import static juglr.StructuredMessage.Type;
+import static juglr.Box.Type;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -44,12 +44,12 @@ public class HTTPServerExample {
     static class CalcActor extends Actor {
 
         public void react(Message msg) {
-            if (!(msg instanceof StructuredMessage)) {
-                throw new MessageFormatException("Expected StructuredMessage");
+            if (!(msg instanceof Box)) {
+                throw new MessageFormatException("Expected Box");
             }
 
-            StructuredMessage resp = new StructuredMessage(Type.MAP);
-            StructuredMessage json = (StructuredMessage)msg;
+            Box resp = new Box(Type.MAP);
+            Box json = (Box)msg;
             if (!json.has("isPrime")) {
                 resp.put("error", "No 'isPrime' key in request");
                 send(resp, msg.getSender());

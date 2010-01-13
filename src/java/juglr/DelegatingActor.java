@@ -14,8 +14,20 @@ public class DelegatingActor extends Actor {
 
     public static interface Strategy {
 
-        public Address next(Message msg);
+        /**
+         * Select the recipient for {@code msg}
+         * @param msg the message to look up a recipient for
+         * @return the address to send {@code msg} to. If {@code null}
+         *         is returned the message will be silently dropped
+         */
+        public Address recipient(Message msg);
 
+        /**
+         * Make sure actors in this strategy have their {@link Actor#start}
+         * methods invoked. Note that it is the responsibility of the strategy
+         * to start any actors that are created after this method has been
+         * invoked
+         */
         public void start();
 
     }
@@ -51,7 +63,7 @@ public class DelegatingActor extends Actor {
             return newForActors(Arrays.asList(delegates));
         }
 
-        public Address next(Message msg) {
+        public Address recipient(Message msg) {
             if (iter == null || !iter.hasNext()) {
                 iter = delegates.iterator();
             }
@@ -114,15 +126,27 @@ public class DelegatingActor extends Actor {
         this.strategy = strategy;
     }
 
+    /**
+     * Asynchronously relay the incoming message to the address determined
+     * by calling {@link Strategy#recipient(Message)}
+     * @param msg the incoming message
+     */
     @Override
     public void react(Message msg) {
-        Address delegate = strategy.next(msg);
+        Address delegate = strategy.recipient(msg);
+
+        if (delegate == null) {
+            return;
+        }
 
         /* Send via the bus instead of this.send()
          * to avoid rewriting the sender address */
         getBus().send(msg, delegate);
     }
 
+    /**
+     * Invoke {@link Strategy#start}
+     */
     @Override
     public void start() {
         strategy.start();

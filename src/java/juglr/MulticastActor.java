@@ -14,10 +14,25 @@ import java.util.List;
  */
 public class MulticastActor extends Actor {
 
+    /**
+     * Used by {@link MulticastActor} to determine which addresses
+     * to relay a given message to
+     */
     public static interface Strategy {
 
+        /**
+         * Get an iterator over the recipients of {@code msg}
+         * @param msg the message to find the recipeints for
+         * @return and iterator over the addresses to send {@code msg} to
+         */
         public Iterator<Address> recipients(Message msg);
 
+        /**
+         * Make sure that all actors related to this strategy have their
+         * {@link Actor#start} method invoked. Note that it is the
+         * responsibility of the strategy to also start any actors that may
+         * be created after this method call
+         */
         public void start();
     }
 
@@ -114,6 +129,11 @@ public class MulticastActor extends Actor {
         return newForActors(Arrays.asList(delegates));
     }
 
+    /**
+     * Asynchronously send {@code msg} to all addresses determined by calling
+     * {@link Strategy#recipients}
+     * @param msg the incoming message
+     */
     @Override
     public void react(Message msg) {
         Iterator<Address> recipients = strategy.recipients(msg);
@@ -122,6 +142,9 @@ public class MulticastActor extends Actor {
         }
     }
 
+    /**
+     * Invoke {@link Strategy#start}
+     */
     @Override
     public void start() {
         strategy.start();

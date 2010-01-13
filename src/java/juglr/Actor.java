@@ -37,7 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Each actor is guaranteed to only be handling one message at a time.
  * In technical terms this means that {@link #react(Message)} is guaranteed to
  * be called from a context synchronized on the actor. Juglr provides some
- * helper classes for parallelizing work, namely {@link SwarmActor} and
+ * helper classes for parallelizing work, namely {@link DelegatingActor} and
  * {@link MulticastActor}.
  *
  * @see Message

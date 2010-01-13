@@ -3,12 +3,14 @@ package juglr;
 import java.util.*;
 
 /**
- * Asynchronously forward messages to a set of delegates according to
- * a given strategy. The SwarmActor will always forward a message to
+ * Asynchronously forward messages to a delegate according to
+ * a given strategy. The DelegatingActor will always forward a message to
  * exactly one delegate. If you need to forward the same message to multiple
  * delegates use a {@link MulticastActor}.
+ *
+ * @see MulticastActor
  */
-public class SwarmActor extends Actor {
+public class DelegatingActor extends Actor {
 
     public static interface Strategy {
 
@@ -66,49 +68,49 @@ public class SwarmActor extends Actor {
 
     private Strategy strategy;
 
-    private SwarmActor() {
+    private DelegatingActor() {
 
     }
 
     /**
-     * Create a new SwarmActor forwarding messages to {@code delegates}
+     * Create a new DelegatingActor forwarding messages to {@code delegates}
      * using a round-robin strategy
      * @param delegates the collection of delegates to forward messages to
      */
-    public SwarmActor(Address... delegates) {
+    public DelegatingActor(Address... delegates) {
         strategy = new RoundRobinStrategy(delegates);
     }
 
     /**
-     * Create a new SwarmActor forwarding messages to {@code delegates}
+     * Create a new DelegatingActor forwarding messages to {@code delegates}
      * using a round-robin strategy
      * @param delegates the collection of delegates to forward messages to
      */
-    public SwarmActor(Iterable<Address> delegates) {
+    public DelegatingActor(Iterable<Address> delegates) {
         strategy = new RoundRobinStrategy(delegates);
     }
 
-    public SwarmActor(Actor... delegates) {
+    public DelegatingActor(Actor... delegates) {
         strategy = RoundRobinStrategy.newForActors(delegates);
     }
 
-    public static SwarmActor newForActors(Iterable<Actor> delegates) {
-        SwarmActor self = new SwarmActor();
+    public static DelegatingActor newForActors(Iterable<Actor> delegates) {
+        DelegatingActor self = new DelegatingActor();
         self.strategy = RoundRobinStrategy.newForActors(delegates);
         return self;
     }
 
-    public static SwarmActor newForActors(Actor... delegates) {
+    public static DelegatingActor newForActors(Actor... delegates) {
         return newForActors(Arrays.asList(delegates));
     }
 
     /**
-     * Create a new SwarmActor forwarding messages to {@code delegates}
+     * Create a new DelegatingActor forwarding messages to {@code delegates}
      * selected using the given {@link Strategy}.
      * @param strategy the Strategy used for selecting the next address to
      *                 forward an incoming message to
      */
-    public SwarmActor(Strategy strategy) {
+    public DelegatingActor(Strategy strategy) {
         this.strategy = strategy;
     }
 

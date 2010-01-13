@@ -57,7 +57,7 @@ public class PingPong {
     }
 
     public static void main(String[] args) throws Exception {
-        Actor pong = new SwarmActor(new Pong(), new Pong(), new Pong());
+        Actor pong = new DelegatingActor(new Pong(), new Pong(), new Pong());
 
         Actor[] pings = new Actor[50000];
         for (int i = 0; i < pings.length; i++) {

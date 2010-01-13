@@ -7,7 +7,10 @@ import java.util.List;
 
 /**
  * Asynchronously forward incoming messages to a collection of delegates
- * based on a given strategy.
+ * based on a given strategy. For cases where you want to forward messages
+ * to a single actor out of a given set see {@link DelegatingActor}.
+ *
+ * @see DelegatingActor
  */
 public class MulticastActor extends Actor {
 

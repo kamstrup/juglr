@@ -32,12 +32,10 @@
  */
 
 import juglr.*;
-import static juglr.net.HTTP.*;
+
 import static juglr.Box.Type;
 
-import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.channels.SocketChannel;
 
 public class HTTPServerExample {
 
@@ -79,7 +77,7 @@ public class HTTPServerExample {
         System.setProperty("juglr.busclass", "juglr.net.HTTPMessageBus");
 
         // Delegate work to three CalcActors in a round-robin manner
-        Actor actor = new SwarmActor(
+        Actor actor = new DelegatingActor(
                 new CalcActor(), new CalcActor(), new CalcActor());
         MessageBus.getDefault().allocateNamedAddress(actor, "calc");
         MessageBus.getDefault().start(actor.getAddress());

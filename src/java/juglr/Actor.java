@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Base class for all actors. An Actor in the Juglr framework sends and receives
  * {@link Message}s over a {@link MessageBus}. All communications between actors
- * is fully asynchronous.
+ * are fully asynchronous.
  * <p/>
  * A very important rule when coding with actors is the idea of
  * <i>"shared nothing"</i>. This is enforced by routing all inter-actor
@@ -21,22 +21,23 @@ import java.util.concurrent.locks.ReentrantLock;
  * need to send messages to.
  * <p/>
  * Although the standard {@link Message} class can indeed hold shared state it
- * is strongly advised to avoid this. One way assert that there is no shared
- * state is to only use {@link Box}s which can only store
- * simply data types (and also have the added benefit of mapping cleanly to
+ * is strongly advised to avoid this. One way to assert that there is no shared
+ * state is to only use {@link Box} messages which can only store
+ * simple data types (and also have the added benefit of mapping cleanly to
  * JSON).
  * <p/>
  * There are two central callback methods actors can override, namely
  * {@link #react} and {@link #start}. As a rule of thumb these methods should
  * never block in order not to starvate the underlying threadpool of the
- * message bus. There are two legal ways for an actor to block, notably
- * {@link #awaitMessage()} and {@link #await(Callable)}.
+ * message bus. There are three legal ways for an actor to block, notably
+ * {@link #awaitMessage()}, {@link #await(Callable)},
+ * and {@link #awaitTimeout(long)}.
  * <p/>
  * <h3>Parallelizing Work</h3>
  * Each actor is guaranteed to only be handling one message at a time.
  * In technical terms this means that {@link #react(Message)} is guaranteed to
- * be called from within a synchronized context. Juglr provides some helper
- * classes for parallelizing work, namely {@link SwarmActor} and
+ * be called from a context synchronized on the actor. Juglr provides some
+ * helper classes for parallelizing work, namely {@link SwarmActor} and
  * {@link MulticastActor}.
  */
 public abstract class Actor {    

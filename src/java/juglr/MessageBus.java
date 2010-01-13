@@ -8,7 +8,11 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * Central message hub all actors are connected to. Actors created without
+ * a specific message bus will be using the bus obtained from calling
+ * {@link juglr.MessageBus#getDefault()}.
  *
+ * @see juglr.net.HTTPMessageBus
  */
 public class MessageBus {
 

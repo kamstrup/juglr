@@ -5,7 +5,7 @@ import java.io.Serializable;
 
 /**
  * Recommended {@link Message} class for general purpose messaging.
- * A Box is a value-like container type that can hold one of:
+ * A Box is a value container type that can hold one of:
  * <ul>
  *   <li>A simple data type; integer, float, boolean, and string</li>
  *   <li>A map of string keys to {@code Box}es</li>
@@ -18,6 +18,9 @@ import java.io.Serializable;
  */
 public class Box extends Message implements Serializable {
 
+    /**
+     * The allowed types for box values
+     */
     public enum Type {
         INT,
         FLOAT,
@@ -27,6 +30,10 @@ public class Box extends Message implements Serializable {
         LIST
     }
 
+    /**
+     * Thrown when invoking methods on a box of a type that does not admit
+     * the invoked method
+     */
     public static class TypeException extends RuntimeException {
         public TypeException(String msg) {
             super(msg);
@@ -177,10 +184,21 @@ public class Box extends Message implements Serializable {
         return get(key) != null;
     }
 
+    /**
+     * Return {@code true} if {@code index} is within the range of the
+     * list contained in this box  of {@code LIST} type
+     * @param index the number to check
+     * @return {@code true} if and only if {@code index} is a valid index into
+     *         the list
+     */
     public boolean has(int index) {
         return index >= 0 && index < getList().size();
     }
 
+    /**
+     * Get the raw value contained in this box
+     * @return the value within this box
+     */
     public Serializable getVal() {
         return val;
     }
@@ -188,60 +206,104 @@ public class Box extends Message implements Serializable {
     /**
      * Add a child Box to a Box of LIST type. This method always returns
      * {@code this}.
-     * @param msg the Box to append
+     * @param box the Box to append
      * @return {@code this}
+     * @throws TypeException if this box is not of type {@code LIST}
      */
     @SuppressWarnings("unchecked")
-    public Box add(Box msg) {
+    public Box add(Box box) {
         checkType(Type.LIST);
-        ((List<Box>)val).add(msg);
+        ((List<Box>)val).add(box);
         return this;
     }
 
+    /**
+     * Add a child to a Box of LIST type. This method always returns
+     * {@code this}.
+     * @param val the value to append
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code LIST}
+     */
     public Box add(long val) {
         return add(new Box(val));
     }
 
+    /**
+     * Add a child to a Box of LIST type. This method always returns
+     * {@code this}.
+     * @param val the value to append
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code LIST}
+     */
     public Box add(double val) {
         return add(new Box(val));
     }
 
+    /**
+     * Add a child to a Box of LIST type. This method always returns
+     * {@code this}.
+     * @param val the value to append
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code LIST}
+     */
     public Box add(boolean val) {
         return add(new Box(val));
     }
 
+    /**
+     * Add a child Box to a Box of LIST type. This method always returns
+     * {@code this}.
+     * @param val the value to append
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code LIST}
+     */
     public Box add(String val) {
         return add(new Box(val));
     }
 
+    /**
+     * Add a child Box to a Box of LIST type. This method always returns
+     * {@code this}.
+     * @param val the list to append
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code LIST}
+     */
     public Box add(List<Box> val) {
         return add(new Box(val));
     }
 
+    /**
+     * Add a child Box to a Box of LIST type. This method always returns
+     * {@code this}.
+     * @param val the map to append
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code LIST}
+     */
     public Box add(Map<String, Box> val) {
         return add(new Box(val));
     }
 
     /**
-     * Add a collection of child StructuredMessages to a Box of LIST type.
+     * Add a collection of child boxes to a box of {@code LIST} type.
      * This method always returns {@code this}.
-     * @param msgList the collection of StructuredMessages to append
+     * @param boxes the collection of Box instances to add
      * @return {@code this}
+     * @throws TypeException if this box is not of type {@code LIST}
      */
     @SuppressWarnings("unchecked")
-    public Box addAll(Collection<Box> msgList) {
+    public Box addAll(Collection<Box> boxes) {
         checkType(Type.LIST);
-        ((List<Box>)val).addAll(msgList);
+        ((List<Box>)val).addAll(boxes);
         return this;
     }
 
     /**
      * Associate a key String with a child Box inside a Box of
-     * LIST type.
-     * This method always returns {@code this}.
+     * {@code LIST} type.
      * @param key the key to add {@code val} under
      * @param val the Box to associate with {@code key}
      * @return {@code this}
+     * @throws TypeException if this box is not of type {@code MAP}
      */
     @SuppressWarnings("unchecked")
     public Box put(String key, Box val) {
@@ -250,26 +312,68 @@ public class Box extends Message implements Serializable {
         return this;
     }
 
+    /**
+     * Associate a value with {@code key} in box of {@code MAP} type.
+     * @param key the key to associate {@code val} with
+     * @param val the value to insert
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code MAP}
+     */
     public Box put(String key, long val) {
         return put(key, new Box(val));
     }
 
+    /**
+     * Associate a value with {@code key} in box of {@code MAP} type.
+     * @param key the key to associate {@code val} with
+     * @param val the value to insert
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code MAP}
+     */
     public Box put(String key, double val) {
         return put(key, new Box(val));
     }
 
+    /**
+     * Associate a value with {@code key} in box of {@code MAP} type.
+     * @param key the key to associate {@code val} with
+     * @param val the value to insert
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code MAP}
+     */
     public Box put(String key, boolean val) {
         return put(key, new Box(val));
     }
 
+    /**
+     * Associate a value with {@code key} in box of {@code MAP} type.
+     * @param key the key to associate {@code val} with
+     * @param val the value to insert
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code MAP}
+     */
     public Box put(String key, String val) {
         return put(key, new Box(val));
     }
 
+    /**
+     * Associate a value with {@code key} in box of {@code MAP} type.
+     * @param key the key to associate {@code val} with
+     * @param val the value to insert
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code MAP}
+     */
     public Box put(String key, List<Box> val) {
         return put(key, new Box(val));
     }
 
+    /**
+     * Associate a value with {@code key} in box of {@code MAP} type.
+     * @param key the key to associate {@code val} with
+     * @param val the value to insert
+     * @return {@code this}
+     * @throws TypeException if this box is not of type {@code MAP}
+     */
     public Box put(String key, Map<String, Box> val) {
         return put(key, new Box(val));
     }
@@ -277,9 +381,9 @@ public class Box extends Message implements Serializable {
     /**
      * Import all key-value pairs from {@code map} into this Box (which
      * must be of the MAP type).
-     * This method always returns {@code this}.
      * @param map a
      * @return {@code this}
+     * @throws TypeException if this box is not of type {@code MAP}
      */
     @SuppressWarnings("unchecked")
     public Box putAll(Map<String, Box> map) {
@@ -288,36 +392,69 @@ public class Box extends Message implements Serializable {
         return this;
     }
 
+    /**
+     * Get the {@code long} which is contained in this Box of {@code INT} type
+     * @return the value contained in the box
+     * @throws TypeException if this box is not of type {@code INT}
+     */
     @SuppressWarnings("unchecked")
     public long getLong() {
         checkType(Type.INT);
         return (Long)val;
     }
 
+    /**
+     * Get the {@code double} which is contained in this Box of {@code FLOAT}
+     * type
+     * @return the value contained in the box
+     * @throws TypeException if this box is not of type {@code FLOAT}
+     */
     @SuppressWarnings("unchecked")
     public double getFloat() {
         checkType(Type.FLOAT);
         return (Double)val;
     }
 
+    /**
+     * Get the {@code boolean} which is contained in this Box of {@code BOOLEAN}
+     * type
+     * @return the value contained in the box
+     * @throws TypeException if this box is not of type {@code BOOLEAN}
+     */
     @SuppressWarnings("unchecked")
     public boolean getBoolean() {
         checkType(Type.BOOLEAN);
         return (Boolean)val;
     }
 
+    /**
+     * Get the {@link String} which is contained in this Box of {@code STRING}
+     * type
+     * @return the value contained in the box
+     * @throws TypeException if this box is not of type {@code STRING}
+     */
     @SuppressWarnings("unchecked")
     public String getString() {
         checkType(Type.STRING);
         return (String)val;
     }
 
+    /**
+     * Get the {@link List} which is contained in this Box of {@code LIST} type
+     * @return the value contained in the box
+     * @throws TypeException if this box is not of type {@code LIST}
+     */
     @SuppressWarnings("unchecked")
     public List<Box> getList() {
         checkType(Type.LIST);
         return (List<Box>)val;
     }
 
+    /**
+     * Get the {@link Map} which is contained in this Box of {@code MAP} type
+     * @return the value contained in the box
+     * @throws TypeException if this box is not of type {@code MAP}
+     */
     @SuppressWarnings("unchecked")
     public Map<String, Box> getMap() {
         checkType(Type.MAP);
@@ -346,8 +483,8 @@ public class Box extends Message implements Serializable {
 
     /**
      * Return the number of immediate child StructuredMessages of this Box
-     * @return The number of child StructuredMessages. This will be 0 for all StructuredMessages
-     *         that are not of the types MAP or LIST
+     * @return The number of child boxes. This will be 0 for all
+     *         Boxes that are not of the types {@code MAP} or {@code LIST}
      */
     public int size() {
         switch (type) {
@@ -435,6 +572,11 @@ public class Box extends Message implements Serializable {
         return true;
     }
 
+    /**
+     * String format the value contained in this box
+     * @return human readable and serialization-friendly string format
+     *         of the box's value
+     */
     @Override
     public String toString() {
         switch (type) {

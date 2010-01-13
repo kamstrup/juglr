@@ -49,14 +49,14 @@ public class HTTPServerExample {
             }
 
             Box resp = new Box(Type.MAP);
-            Box json = (Box)msg;
-            if (!json.has("isPrime")) {
+            Box box = (Box)msg;
+            if (!box.has("isPrime")) {
                 resp.put("error", "No 'isPrime' key in request");
                 send(resp, msg.getSender());
                 return;
             }
 
-            String test = json.get("isPrime").toString();
+            String test = box.get("isPrime").toString();
             try {
                 BigInteger bigInt = new BigInteger(test);
 

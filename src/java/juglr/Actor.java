@@ -39,6 +39,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * be called from a context synchronized on the actor. Juglr provides some
  * helper classes for parallelizing work, namely {@link SwarmActor} and
  * {@link MulticastActor}.
+ *
+ * @see Message
+ * @see MessageBus
  */
 public abstract class Actor {    
 
@@ -51,28 +54,58 @@ public abstract class Actor {
     private Message waitingMessage;
     private boolean waitingForPrivatePostFlag;
 
+    /**
+     * Create an actor connected to the default message bus
+     *
+     * @see MessageBus#getDefault()
+     */
     public Actor() {
         this(MessageBus.getDefault());
     }
 
+    /**
+     * Create an actor connected to the {@link MessageBus} {@code bus}
+     * @param bus the message bus the actor should connect to
+     */
     public Actor(MessageBus bus) {
         this.bus = bus;
         address = bus.allocateUniqueAddress(this);
         waitingMessage = null;
     }
 
+    /**
+     * Get the unique address of this actor assigned by the message bus
+     * upon connection time
+     * @return the unique bus name for this actor
+     */
     public final Address getAddress() {
         return address;
     }
 
+    /**
+     * Get the message bus this actor is connected to
+     * @return
+     */
     public MessageBus getBus() {
         return bus;
     }
 
+    /**
+     * Returns the externalized form of this actor's {@link Address}
+     * @return
+     */
     public String toString() {
         return address.externalize();
     }
 
+    /**
+     * Send a message to another actor. To send a reply to an incoming message
+     * do {@code send(myMsg, msg.getSender()}
+     *
+     * @param msg the message to send
+     * @param receiver the address of the actor to send to
+     * @see Message#getSender
+     */
     public final void send(Message msg, Address receiver) {
         msg.setSender(this.getAddress());
         bus.send(msg, receiver);

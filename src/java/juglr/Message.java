@@ -12,6 +12,7 @@ package juglr;
  *
  * @see Actor
  * @see Box
+ * @see MessageBus
  */
 public class Message {
 

@@ -10,6 +10,9 @@ package juglr;
  * Addresses are obtained by calling
  * {@link MessageBus#allocateNamedAddress(Actor, String)} and freed again by
  * calling {@link MessageBus#freeAddress(Address)}.
+ *
+ * @see Actor
+ * @see MessageBus
  */
 public abstract class Address {
 

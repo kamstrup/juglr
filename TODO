@@ -1,30 +1,18 @@
-FOR 0.1
--------
-
- * Javadocs
+Tasks
+-----
 
  * Being able to disconnect from the bus (deallocateAddress)
 
- * Be able to unsubscribe from well known address
-
  * Bridge HTTP methods to native MB methods in HTTPMessageBus
 
- * Make sure Actor.start() is called from a sync context 
-
-FOR 0.2
--------
-
- * Blocking streams to avoid thread pool starvation on blocking IO
-     - note that we also need to do managed blocks when creating the stream
-       instances in the first place (eg. new FileInputStream)
-     - Look at nio.2 for Java 7 async api
+ * Make sure Actor.start() is called from a synchronized context
 
  * A clean way to send a Shutdown message from the bus to all actors
 
- * Unit tests
+ * More unit tests
 
  * Migrate Juglr into Jumpr namespace as jumpr.messaging
 
  * Migrate standard Jumpr classes to jumpr.core
  
- * StructuredMessage template matching for easy message validation
+ * Box template matching for easy message validation

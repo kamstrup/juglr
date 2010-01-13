@@ -11,7 +11,7 @@ import java.util.Iterator;
 /**
  *
  */
-public class JSonMessageParser implements MessageParser {
+public class JSonBoxParser implements BoxParser {
 
     public Box parse (String in) {
         try {

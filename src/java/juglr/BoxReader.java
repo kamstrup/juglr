@@ -3,18 +3,21 @@ package juglr;
 import java.io.Reader;
 
 /**
- * A Reader class that outputs a message as a character stream. You can save
+ * A Reader class that outputs a box message as a character stream. You can save
  * system resources by invoking {@link #reset(Box)} instead of
- * creating new MessageReaders.
+ * creating new BoxReaders.
+ *
+ * @see JSonBoxReader
+ * @see BoxParser
  */
-public abstract class MessageReader extends Reader {
+public abstract class BoxReader extends Reader {
 
     /**
      * The message being serialized.
      */
     protected Box msg;
 
-    public MessageReader (Box msg) {
+    public BoxReader(Box msg) {
         this.msg = msg;
     }
 

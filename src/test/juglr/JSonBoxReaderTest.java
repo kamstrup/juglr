@@ -13,7 +13,7 @@ import java.io.IOException;
 /**
  *
  */
-public class JSonMessageReaderTest {
+public class JSonBoxReaderTest {
 
     @DataProvider(name="simple")
     public Iterator<Object[]> createSimpleStructuredMessages() {
@@ -77,7 +77,7 @@ public class JSonMessageReaderTest {
 
     @Test(dataProvider="simple")
     public void cmpSimpleMsg2JS(Box msg, String json) throws IOException {
-        Reader r = new JSonMessageReader(msg);
+        Reader r = new JSonBoxReader(msg);
         assertEquals(readFully(r), json);
     }
 
@@ -124,7 +124,7 @@ public class JSonMessageReaderTest {
 
     @Test(dataProvider="list")
     public void cmpListMsg2JS(Box msg, String json) throws IOException {
-        Reader r = new JSonMessageReader(msg);
+        Reader r = new JSonBoxReader(msg);
         assertEquals(readFully(r), json);
     }
 
@@ -163,7 +163,7 @@ public class JSonMessageReaderTest {
     @Test(dataProvider="map")
     public void cmpMapMsg2JS(Box msg, String json) throws IOException {
         // FIXME: These comparisons depend on the internal Hash impl of Java
-        Reader r = new JSonMessageReader(msg);
+        Reader r = new JSonBoxReader(msg);
         assertEquals(readFully(r), json);
     }
 

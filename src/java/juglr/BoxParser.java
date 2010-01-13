@@ -7,8 +7,11 @@ import java.io.IOException;
 /**
  * Interface for parsers cabable of parsing {@link Box} objects
  * from character streams.
+ *
+ * @see BoxReader
+ * @see JSonBoxParser
  */
-public interface MessageParser {
+public interface BoxParser {
 
     public Box parse(String in);
 

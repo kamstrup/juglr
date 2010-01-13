@@ -12,9 +12,12 @@ import java.io.Serializable;
  *   <li>or a list of {@code Box}es</li>
  * </ul>
  * Box instances serialize cleanly and efficiently over streams, and Juglr
- * bundles the classes {@link JSonMessageReader} and {@link JSonMessageParser}
+ * bundles the classes {@link JSonBoxReader} and {@link JSonBoxParser}
  * for this purpose. 
  * <p/>
+ *
+ * @see JSonBoxReader
+ * @see JSonBoxParser
  */
 public class Box extends Message implements Serializable {
 
@@ -588,7 +591,7 @@ public class Box extends Message implements Serializable {
                 return "\"" + val.toString() + "\"";
             case MAP:
             case LIST:
-                return new JSonMessageReader(this).asString();
+                return new JSonBoxReader(this).asString();
             default:
                 // This should never happen
                 throw new RuntimeException("Unexpected message type " + type);

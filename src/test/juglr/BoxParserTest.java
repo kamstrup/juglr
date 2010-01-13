@@ -11,7 +11,7 @@ import java.util.ArrayList;
 /**
  *
  */
-public class MessageParserTest {
+public class BoxParserTest {
 
     @DataProvider(name="json")
     public Iterator<Object[]> flatJSon() {
@@ -46,7 +46,7 @@ public class MessageParserTest {
 
     @Test(dataProvider="json")
     public void parseJSon(String json, Message expected) {
-        MessageParser parser = new JSonMessageParser();
+        BoxParser parser = new JSonBoxParser();
 
         Box result = parser.parse(json);
         assertEquals(result,expected);

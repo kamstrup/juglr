@@ -109,7 +109,7 @@ public class HTTPMessageBus extends MessageBus {
         public TCPChannelActor accept(final SocketChannel channel) {
             return new TCPChannelActor() {
                 // FIXME: Use ThreadLocals here to save memory
-                JSonMessageParser msgParser = new JSonMessageParser();
+                JSonBoxParser msgParser = new JSonBoxParser();
                 HTTPRequestReader req = new HTTPRequestReader(channel);
                 HTTPResponseWriter resp = new HTTPResponseWriter(channel);
 

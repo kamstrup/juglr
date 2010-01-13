@@ -106,8 +106,8 @@ public class HTTPMessageBus extends MessageBus {
      */
     class ConnectionStrategy implements TCPChannelStrategy {
 
-        public TCPChannelActor accept(final SocketChannel channel) {
-            return new TCPChannelActor() {
+        public TCPChannelActor accept(SocketChannel channel) {
+            return new TCPChannelActor(channel) {
                 // FIXME: Use ThreadLocals here to save memory
                 JSonBoxParser msgParser = new JSonBoxParser();
                 HTTPRequestReader req = new HTTPRequestReader(channel);
@@ -121,18 +121,18 @@ public class HTTPMessageBus extends MessageBus {
                                                   "Expected Box");
                     }
 
-                    Box _msg = (Box)msg;
+                    Box box = (Box)msg;
                     HTTP.Status status;
-                    if (_msg.has("__httpStatusCode__")) {
+                    if (box.has("__httpStatusCode__")) {
                         status = HTTP.Status.fromHttpOrdinal(
-                                                           (int)_msg.getLong());
-                        _msg.getMap().remove("__httpStatusCode__");
+                                                           (int)box.getLong());
+                         box.getMap().remove("__httpStatusCode__");
                     } else {
                         status = HTTP.Status.OK;
                     }
 
                     try {
-                        respond(status, _msg);
+                        respond(status, box);
                     } catch (IOException e) {
                         // FIXME
                         e.printStackTrace();

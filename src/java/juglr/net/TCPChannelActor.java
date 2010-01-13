@@ -14,6 +14,14 @@ import java.nio.channels.SocketChannel;
  */
 public abstract class TCPChannelActor extends Actor {
 
+    /**
+     * The channel to handle
+     */
+    protected SocketChannel channel;
+
     // This is an abstract class in order to make it possible
     // to keep private state around if we need to do so in the future
+    public TCPChannelActor(SocketChannel channel) {
+        this.channel = channel;
+    }
 }

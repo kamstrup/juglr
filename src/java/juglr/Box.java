@@ -406,6 +406,14 @@ public class Box extends Message implements Serializable {
         return (Long)val;
     }
 
+    public long getLong(int index) {
+        return get(index).getLong();
+    }
+
+    public long getLong(String key) {
+        return get(key).getLong();
+    }
+
     /**
      * Get the {@code double} which is contained in this Box of {@code FLOAT}
      * type
@@ -416,6 +424,14 @@ public class Box extends Message implements Serializable {
     public double getFloat() {
         checkType(Type.FLOAT);
         return (Double)val;
+    }
+
+    public double getFloat(int index) {
+        return get(index).getFloat();
+    }
+
+    public double getFloat(String key) {
+        return get(key).getFloat();
     }
 
     /**
@@ -430,6 +446,14 @@ public class Box extends Message implements Serializable {
         return (Boolean)val;
     }
 
+    public boolean getBoolean(int index) {
+        return get(index).getBoolean();
+    }
+
+    public boolean getBoolean(String key) {
+        return get(key).getBoolean();
+    }
+
     /**
      * Get the {@link String} which is contained in this Box of {@code STRING}
      * type
@@ -440,6 +464,14 @@ public class Box extends Message implements Serializable {
     public String getString() {
         checkType(Type.STRING);
         return (String)val;
+    }
+
+    public String getString(int index) {
+        return get(index).getString();
+    }
+
+    public String getString(String key) {
+        return get(key).getString();
     }
 
     /**
@@ -453,6 +485,14 @@ public class Box extends Message implements Serializable {
         return (List<Box>)val;
     }
 
+    public List<Box> getList(int index) {
+        return get(index).getList();
+    }
+
+    public List<Box> getList(String key) {
+        return get(key).getList();
+    }
+
     /**
      * Get the {@link Map} which is contained in this Box of {@code MAP} type
      * @return the value contained in the box
@@ -462,6 +502,14 @@ public class Box extends Message implements Serializable {
     public Map<String, Box> getMap() {
         checkType(Type.MAP);
         return (Map<String, Box>)val;
+    }
+
+    public Map<String,Box> getMap(int index) {
+        return get(index).getMap();
+    }
+
+    public Map<String,Box> getMap(String key) {
+        return get(key).getMap();
     }
 
     /**

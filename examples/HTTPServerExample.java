@@ -54,7 +54,7 @@ public class HTTPServerExample {
                 return;
             }
 
-            String test = box.get("isPrime").toString();
+            String test = box.getString("isPrime");
             try {
                 BigInteger bigInt = new BigInteger(test);
 

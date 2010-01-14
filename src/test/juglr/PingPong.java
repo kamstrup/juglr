@@ -57,6 +57,7 @@ public class PingPong {
     }
 
     public static void main(String[] args) throws Exception {
+        /* Three Pong actors handle incoming requests in a round-robin manner */
         Actor pong = new DelegatingActor(new Pong(), new Pong(), new Pong());
 
         Actor[] pings = new Actor[50000];

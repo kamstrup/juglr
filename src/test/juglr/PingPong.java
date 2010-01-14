@@ -1,7 +1,14 @@
 package juglr;
 
 /**
+ * A simple example that sends a massive number of pings to a pong server
+ * that is backed by three identical actors.
+ * <p/>
+ * Compile with:
+ *     javac -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar PingPong.java
  *
+ * Run with:
+ *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar:. PingPong
  */
 public class PingPong {
 
@@ -36,19 +43,6 @@ public class PingPong {
 
         @Override
         public void react(Message msg) {
-            /* This impl. is the "slow and blocking approach" */
-            /*System.out.println("[" + this
-                  + "] Initial ping from [" + msg.getSender() + "]");
-            sendReply(msg);
-            while ((msg = awaitMessage()) != null) {
-                sendReply(msg);
-            }*/
-
-            /* This react() impl. would be the "fast and snappy" approach */
-            sendReply(msg);
-        }
-
-        private void sendReply(Message msg) {
             pings++;
             System.out.println(
              "[" + this + "] replying to " + msg.getSender());

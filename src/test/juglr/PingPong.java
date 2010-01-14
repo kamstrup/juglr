@@ -1,5 +1,3 @@
-package juglr;
-
 /**
  * A simple example that sends a massive number of pings to a pong server
  * that is backed by three identical actors.
@@ -10,6 +8,9 @@ package juglr;
  * Run with:
  *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar:. PingPong
  */
+
+import juglr.*;
+
 public class PingPong {
 
     static class Ping extends Actor {

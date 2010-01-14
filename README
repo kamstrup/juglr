@@ -3,7 +3,7 @@
 
   LEGAL NOTICE
   Please make sure that you acknowledge and understand the LICENSE and
-  NOTICE files shipped with this distribution before using Jumpr.
+  NOTICE files shipped with this distribution before using Juglr.
 
   SPECIAL NOTICE FOR JAVA 6
   The Juglr runtime depends on Doug Lea's Fork/Join framework also
@@ -16,7 +16,7 @@
   when using Juglr with Java 6.
 
   PROJECT HOSTING
-  The Juglr project is currently hosted on Gitorious:
+  The Juglr project is currently hosted on GitHub:
 
-    http://gitorious.org/juglr
+    http://github.com/mkamstrup/juglr
 

@@ -3,15 +3,15 @@
  * that is backed by three identical actors.
  * <p/>
  * Compile with:
- *     javac -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar PingPong.java
+ *     javac -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar PingPongExample.java
  *
  * Run with:
- *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar:. PingPong
+ *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar:. PingPongExample
  */
 
 import juglr.*;
 
-public class PingPong {
+public class PingPongExample {
 
     static class Ping extends Actor {
 

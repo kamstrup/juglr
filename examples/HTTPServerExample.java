@@ -46,7 +46,7 @@ public class HTTPServerExample {
                 throw new MessageFormatException("Expected Box");
             }
 
-            Box resp = new Box(Type.MAP);
+            Box resp = Box.newMap();
             Box box = (Box)msg;
             if (!box.has("isPrime")) {
                 resp.put("error", "No 'isPrime' key in request");

@@ -14,8 +14,8 @@ public class TCPServerExample {
 
     static class Strategy implements TCPChannelStrategy {
 
-        public TCPChannelActor accept(final SocketChannel channel) {
-            return new TCPChannelActor() {
+        public TCPChannelActor accept(SocketChannel channel) {
+            return new TCPChannelActor(channel) {
 
                 ByteBuffer in = ByteBuffer.allocate(1024);
                 ByteBuffer out = ByteBuffer.wrap("Hello world\n".getBytes());

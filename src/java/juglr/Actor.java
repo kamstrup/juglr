@@ -245,6 +245,13 @@ public abstract class Actor {
                 /* All is well */
                 react(msg);
             }
+        } catch (Throwable t) {
+            /* Catch anything, since we can't trust react() and we are running
+             * in a thread, so exceptions will silently vanish if uncaught */
+            System.err.println(String.format(
+             "Error caught from actor '%s' while processing the message %s: %s",
+             this, msg, t));
+            t.printStackTrace();
         } finally {
             dispatchLock.unlock();
         }

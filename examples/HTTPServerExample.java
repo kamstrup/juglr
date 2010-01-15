@@ -54,10 +54,9 @@ public class HTTPServerExample {
                 return;
             }
 
-            String test = box.getString("isPrime");
+            Box test = box.get("isPrime");
             try {
-                BigInteger bigInt = new BigInteger(test);
-
+                BigInteger bigInt = new BigInteger(test.toString());
                 // We guess right with 0.9990234375 probability
                 if (bigInt.isProbablePrime(10)) {
                     resp.put("response", "true");
@@ -66,7 +65,7 @@ public class HTTPServerExample {
                 }
                 send(resp, msg.getSender());
             } catch (NumberFormatException e) {
-                resp.put("error", "Not a valid integer");
+                resp.put("error", "Not a valid integer: " + test.toString());
                 send(resp, msg.getSender());
             }
         }

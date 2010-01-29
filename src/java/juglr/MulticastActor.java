@@ -78,7 +78,7 @@ public class MulticastActor extends Actor {
         }
     }
 
-    private Strategy strategy;
+    protected Strategy strategy;
 
     private MulticastActor() {
 

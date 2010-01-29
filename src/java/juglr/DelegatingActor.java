@@ -78,7 +78,7 @@ public class DelegatingActor extends Actor {
         }
     }
 
-    private Strategy strategy;
+    protected Strategy strategy;
 
     private DelegatingActor() {
 

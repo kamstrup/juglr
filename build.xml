@@ -54,14 +54,14 @@
         <condition property="hasJava">
             <equals arg1="${project.compiler.version}" arg2="${java.specification.version}"/>
         </condition>
-        <fail message="Currently Jumpr only compiles with Java ${project.compiler.version}. Found Java ${java.specification.version}"
+        <fail message="Currently Juglr only compiles with Java ${project.compiler.version}. Found Java ${java.specification.version}"
               unless="hasJava"/>
 
         <echo message="Checking Ant version is atleast ${project.ant.version}"/>
         <condition property="hasAnt">
             <antversion atleast="${project.ant.version}"/>
         </condition>
-        <fail message="Currently Jumpr only compiles with Ant ${project.ant.version}. Found Ant ${ant.version}"
+        <fail message="Currently Juglr only compiles with Ant ${project.ant.version}. Found Ant ${ant.version}"
               unless="hasAnt"/>
     </target>
 
@@ -100,7 +100,7 @@
                 author="true"
                 version="true"
                 access="protected"
-                windowtitle="Jumpr Module"
+                windowtitle="Juglr Module"
                 additionalparam="-breakiterator -J${jsr166}">
             <packageset dir="${src.dir}">
                 <include name="juglr/**"/>

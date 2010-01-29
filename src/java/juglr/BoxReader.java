@@ -24,8 +24,9 @@ public abstract class BoxReader extends Reader {
     /**
      * Prepare the reader for serializing another message.
      * @param msg the message to serialize
+     * @return always returns {@code this}
      */
-    public abstract void reset(Box msg);
+    public abstract BoxReader reset(Box msg);
 
     /**
      * Read the entire message an return it as a string

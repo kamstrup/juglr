@@ -25,7 +25,7 @@ public class JSonBoxReader extends BoxReader {
     }
 
     @Override
-    public void reset(Box msg) {
+    public JSonBoxReader reset(Box msg) {
         if (msg == null) {
             throw new NullPointerException();
         }
@@ -36,6 +36,7 @@ public class JSonBoxReader extends BoxReader {
         buf.setLength(0);
 
         appendStructuredMessage(msg);
+        return this;
     }
 
     public String asString () {

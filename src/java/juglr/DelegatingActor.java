@@ -133,6 +133,8 @@ public class DelegatingActor extends Actor {
      */
     @Override
     public void react(Message msg) {
+        if (!validate(msg)) return;
+        
         Address delegate = strategy.recipient(msg);
 
         if (delegate == null) {
@@ -150,5 +152,18 @@ public class DelegatingActor extends Actor {
     @Override
     public void start() {
         strategy.start();
+    }
+
+    /**
+     * If this method returns {@code false} {@code msg} will not be sent
+     * along to the delegates. The default implementation always return
+     * {@code true} - subclasses should override this method with their own
+     * validation logic.
+     * @param msg the message to validate
+     * @return {@code true} if the message is good and should be forwarded to
+     *         the delegates and {@code false} if the message should be blocked
+     */
+    public boolean validate(Message msg) {
+        return true;
     }
 }

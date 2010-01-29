@@ -33,7 +33,13 @@ public class JSonBoxReader extends BoxReader {
         this.msg = msg;
         next = null;
         cursor = 0;
-        buf.setLength(0);
+
+        // buf is null if we have been close()ed
+        if (buf != null) {
+            buf.setLength(0);
+        } else {
+            buf = new StringBuilder();
+        }
 
         appendStructuredMessage(msg);
         return this;

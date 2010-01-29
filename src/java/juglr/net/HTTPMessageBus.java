@@ -123,7 +123,8 @@ public class HTTPMessageBus extends MessageBus {
 
                     Box box = (Box)msg;
                     HTTP.Status status;
-                    if (box.has("__httpStatusCode__")) {
+                    if (box.getType() == Box.Type.MAP &&
+                        box.has("__httpStatusCode__")) {
                         status = HTTP.Status.fromHttpOrdinal(
                                                            (int)box.getLong());
                          box.getMap().remove("__httpStatusCode__");

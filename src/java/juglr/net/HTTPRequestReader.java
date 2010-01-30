@@ -161,26 +161,8 @@ public class HTTPRequestReader {
         return numRead;
     }
 
-    public Version readVersion() {
-        if (buf.get() == 'H' &&
-            buf.get() == 'T' &&
-            buf.get() == 'T' &&
-            buf.get() == 'P' &&
-            buf.get() == '/' &&
-            buf.get() == '1' &&
-            buf.get() == '.')
-            if (buf.get() == '0' &&
-                buf.get() == '\r' &&
-                buf.get() == '\n') {
-                return Version.ONE_ZERO;
-            } else if (buf.get() == '1' &&
-                       buf.get() == '\r' &&
-                       buf.get() == '\n') {
-                return Version.ONE_ONE;
-            } else {
-                return Version.UNKNOWN;
-            }
-        return Version.ERROR;
+    public HTTP.Version readVersion() {
+        return HTTP.Version.read(buf);
     }
 
     public int readHeaderField(byte[] target) {

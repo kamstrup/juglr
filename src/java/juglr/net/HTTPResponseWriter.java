@@ -3,8 +3,13 @@ package juglr.net;
 import static juglr.net.HTTP.*;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
 
 /**
  * A {@link java.io.Writer}-like class for writing HTTP responses to a
@@ -29,11 +34,13 @@ public class HTTPResponseWriter {
 
     private SocketChannel channel;
     private ByteBuffer buf;
+    private CharsetEncoder encoder;
 
     public HTTPResponseWriter(SocketChannel channel,
                              ByteBuffer buf) {
         this.channel = channel;
         this.buf = buf;
+        encoder = Charset.defaultCharset().newEncoder();
     }
 
     public HTTPResponseWriter(SocketChannel channel) {
@@ -59,16 +66,16 @@ public class HTTPResponseWriter {
     public void writeVersion(Version version) throws IOException {
         switch (version) {
             case ONE_ZERO:
-                writeBody("HTTP/1.0 ".getBytes());
+                writeBody("HTTP/1.0 ");
                 break;
             case ONE_ONE:
-                writeBody("HTTP/1.1 ".getBytes());
+                writeBody("HTTP/1.1 ");
                 break;
             case UNKNOWN:
-                writeBody("HTTP/1.0 ".getBytes());
+                writeBody("HTTP/1.0 ");
                 break;
             case ERROR:
-                writeBody("HTTP/1.0 ".getBytes());
+                writeBody("HTTP/1.0 ");
                 break;
         }
     }
@@ -88,10 +95,10 @@ public class HTTPResponseWriter {
         writeBody(new byte[]{'\r', '\n'});
     }
 
-    public void writeBody(String s) throws IOException {
-        for (int i = 0; i < s.length(); i++) {
-            // FIXME: Encoding bug. We cast char to byte
-            writeBody((byte)s.charAt(i));
+    public void writeBody(CharSequence s) throws IOException {
+        CharBuffer cbuf = CharBuffer.wrap(s);
+        while (encoder.encode(cbuf, buf, true) == CoderResult.OVERFLOW) {
+            flush();
         }
     }
 

@@ -55,8 +55,10 @@ public class HTTPWriter {
     }
 
     public void writeHeader(String name, String value) throws IOException {
-        // FIXME: To many string/byte[] allocations
-        writeBody((name + ": " + value + "\r\n").getBytes());
+        writeBody(name);
+        writeBody(": ");
+        writeBody(value);
+        writeLF();        
     }
 
     public void startBody() throws IOException {

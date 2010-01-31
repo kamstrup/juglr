@@ -50,7 +50,7 @@ public class HTTPRequestWriter extends HTTPWriter {
 
     public void writeVersion(HTTP.Version version) throws IOException {
         super.writeVersion(version);
-        writeBody("\r\n");
+        writeLF();
     }
 
 }

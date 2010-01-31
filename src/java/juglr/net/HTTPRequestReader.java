@@ -162,7 +162,11 @@ public class HTTPRequestReader {
     }
 
     public HTTP.Version readVersion() {
-        return HTTP.Version.read(buf);
+        Version v = HTTP.Version.read(buf);
+        if (buf.get() == '\r' && buf.get() == '\n') {
+            return v;
+        }
+        return Version.ERROR;
     }
 
     public int readHeaderField(byte[] target) {

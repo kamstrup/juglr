@@ -47,13 +47,9 @@ public class HTTP {
                     buf.get() == '/' &&
                     buf.get() == '1' &&
                     buf.get() == '.')
-                if (buf.get() == '0' &&
-                        buf.get() == '\r' &&
-                        buf.get() == '\n') {
+                if (buf.get() == '0') {
                     return Version.ONE_ZERO;
-                } else if (buf.get() == '1' &&
-                        buf.get() == '\r' &&
-                        buf.get() == '\n') {
+                } else if (buf.get() == '1') {
                     return Version.ONE_ONE;
                 } else {
                     return Version.UNKNOWN;

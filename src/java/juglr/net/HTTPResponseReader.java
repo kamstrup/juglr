@@ -57,7 +57,11 @@ public class HTTPResponseReader {
     }
 
     public HTTP.Version readVersion() {
-        return HTTP.Version.read(buf);
+        HTTP.Version v = HTTP.Version.read(buf);
+        if (buf.get() != ' ') {
+            return HTTP.Version.ERROR;
+        }
+        return v;
     }
 
     public HTTP.Status readStatus() {

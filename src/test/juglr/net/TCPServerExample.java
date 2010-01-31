@@ -18,7 +18,7 @@ public class TCPServerExample {
             return new TCPChannelActor(channel) {
 
                 ByteBuffer in = ByteBuffer.allocate(1024);
-                ByteBuffer out = ByteBuffer.wrap("Hello world\n".getBytes());
+                ByteBuffer out = ByteBuffer.wrap("You said: ".getBytes());
 
                 @Override
                 public void react(Message msg) {
@@ -36,6 +36,7 @@ public class TCPServerExample {
                             System.out.println("Read: " + numRead + " bytes:");
                             System.out.println(new String(bytes));
                             channel.write(out);
+                            channel.write(ByteBuffer.wrap(bytes));
                         }
                     } catch (IOException e) {
                         e.printStackTrace(); // FIXME

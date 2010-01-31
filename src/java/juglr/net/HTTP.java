@@ -30,32 +30,7 @@ public class HTTP {
         ONE_ZERO,
         ONE_ONE,
         UNKNOWN,
-        ERROR;
-
-        /**
-         * Parse a HTTP protocol version declaration as used in the HTTP
-         * protocol. The buffer will be positioned just after the last parsed
-         * character upon method return
-         * @param buf the buffer to parse from
-         * @return the HTTP version or {@link #ERROR} on errors
-         */
-        public static Version read(ByteBuffer buf) {
-            if (buf.get() == 'H' &&
-                    buf.get() == 'T' &&
-                    buf.get() == 'T' &&
-                    buf.get() == 'P' &&
-                    buf.get() == '/' &&
-                    buf.get() == '1' &&
-                    buf.get() == '.')
-                if (buf.get() == '0') {
-                    return Version.ONE_ZERO;
-                } else if (buf.get() == '1') {
-                    return Version.ONE_ONE;
-                } else {
-                    return Version.UNKNOWN;
-                }
-            return Version.ERROR;
-        }
+        ERROR        
     }
 
     /**
@@ -163,54 +138,6 @@ public class HTTP {
                     return InternalError;
             }
         }
-
-        public static Status read(ByteBuffer buf) {
-            if (buf.remaining() < 3) {
-                throw new BufferUnderflowException();
-            }
-
-            int d0 = buf.get() - 48;
-            int d1 = buf.get() - 48;
-            int d2 = buf.get() - 48;
-
-            switch (d0) {
-                case 2:
-                    if (d1 == 0) {
-                        switch (d2) {
-                            case 0: return OK;
-                            case 1: return Created;
-                            case 2: return Accepted;
-                            case 4: return NoContent;
-                        }
-                    }
-                    throw new UnsupportedStatusException(d0, d1, d2);
-                case 3:
-                    if (d1 == 0 && d2 == 2) return Found;
-                    throw new UnsupportedStatusException(d0, d1, d2);
-                case 4:
-                    if (d1 == 0) {
-                        switch (d2) {
-                            case 0: return BadRequest;
-                            case 1: return Unauthorized;
-                            case 3: return Forbidden;
-                            case 4: return NotFound;
-                            case 5: return MethodNotAllowed;
-                            case 6: return NotAcceptable;
-                            case 8: return RequestTimeout;
-                            case 9: return Conflict;
-                        }
-                    }
-                    throw new UnsupportedStatusException(d0, d1, d2);
-                case 5:
-                    if (d1 == 0 && d2 == 0) return InternalError;
-                    throw new UnsupportedStatusException(d0, d1, d2);
-                default:
-                    throw new UnsupportedStatusException(d0, d1, d2);
-
-            }
-        }
-
-
     }
 
     public static class UnsupportedStatusException extends RuntimeException {

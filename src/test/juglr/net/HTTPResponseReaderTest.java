@@ -63,7 +63,8 @@ public class HTTPResponseReaderTest {
 
     @Test(dataProvider="response")
     public void readHeader(ByteBuffer buf, HTTP.Version version,
-                           HTTP.Status status, int numHeaders, String body) {
+                           HTTP.Status status, int numHeaders, String body)
+                                                              throws Exception {
         HTTPResponseReader r = new HTTPResponseReader(null, buf);
 
         HTTP.Version v = r.readVersion();

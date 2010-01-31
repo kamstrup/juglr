@@ -37,53 +37,24 @@ import static juglr.net.HTTP.*;
  * System.out.println();
  * </pre>
  */
-public class HTTPRequestReader {
+public class HTTPRequestReader extends HTTPReader {
 
     // FIXME: Document MAX_URI_LENGTH and make it tweakable
-    public static final int MAX_URI_LENGTH = 1024;
-
-    // FIXME: Document MAX_HEADER_LENGTH and make it tweakable
-    public static final int MAX_HEADER_LENGTH = 1024;
-
-    private SocketChannel channel;
-    private ByteBuffer buf;   
+    public static final int MAX_URI_LENGTH = 1024;    
 
     public HTTPRequestReader(SocketChannel channel,
                              ByteBuffer buf) {
-        this.channel = channel;
-        this.buf = buf;
+        super(channel, buf);
     }
 
     public HTTPRequestReader(SocketChannel channel) {
         this(channel, ByteBuffer.allocate(1024));
     }
 
-    /**
-     * Reset all state in the reader, preparing it for reading {@code channel}.
-     * @param channel the channel to start reading from. If the reader refers
-     * a channel then this channel will be closed.
-     *
-     * @return always returns {@code this}
-     * @throws IOException if the reader already refers an open channel and
-     *                     there is an error closing it
-     */
+    @Override
     public HTTPRequestReader reset(SocketChannel channel) throws IOException {
-        close();
-        this.channel = channel;
-        buf.clear();
-
+        super.reset(channel);
         return this;
-    }
-
-    /**
-     * Close the underlying channel if it's open
-     * @throws IOException if the underlying channel is open and there is an
-     *                     error closing the channel
-     */
-    public void close() throws IOException {
-        if (this.channel.isOpen()) {
-            this.channel.close();
-        }
     }
 
     public Method readMethod() {
@@ -148,7 +119,7 @@ public class HTTPRequestReader {
         }
     }
 
-    public int readURI(byte[] target) {
+    public int readURI(byte[] target) throws IOException {
         int uriEnd = buf.position();
         while (buf.get(uriEnd) != ' ' &&
                uriEnd < MAX_URI_LENGTH &&
@@ -157,56 +128,17 @@ public class HTTPRequestReader {
         }
         int numRead = uriEnd - buf.position();
         buf.get(target, 0, numRead);
-        buf.get(); // Skip whitespace
+        readSpace(); // Skip whitespace
         return numRead;
     }
 
-    public HTTP.Version readVersion() {
-        Version v = HTTP.Version.read(buf);
-        if (buf.get() == '\r' && buf.get() == '\n') {
-            return v;
-        }
+    public HTTP.Version readVersion() throws IOException {
+        Version v = super.readVersion();
+        if (readLF()) return v;
         return Version.ERROR;
     }
 
-    public int readHeaderField(byte[] target) {
-        int fieldEnd = buf.position();
-
-        // The empty line just before the body
-        if (fieldEnd + 2 < buf.limit() &&
-            buf.get(fieldEnd) == '\r' && buf.get(fieldEnd + 1) == '\n') {
-
-            // Move position to after fieldEnd + '\r' + '\n'
-            buf.position(fieldEnd + 2);
-            return 0;
-        }
-
-        while (fieldEnd < MAX_HEADER_LENGTH &&
-               fieldEnd + 2 < buf.limit()) {
-
-            // Success on line end
-            if (buf.get(fieldEnd + 1) == '\r' && buf.get(fieldEnd +2) == '\n') {
-                int numRead = Math.min(target.length,
-                                       fieldEnd - buf.position() + 1);
-                buf.get(target, 0, numRead);
-
-                // Move position to after fieldEnd + '\r' + '\n', even though
-                // we might have read less than the entire line
-                buf.position(fieldEnd + 3);
-                return numRead;
-            }
-            fieldEnd++;
-        }
-
-        // We did not meet a line end
-        return -1;
-    }
-
-    public int readBody(byte[] target) {
-        int numRead = Math.min(buf.remaining(), target.length);
-        buf.get(target, 0, numRead);
-        return numRead;
-    }
+    
 
 
 }

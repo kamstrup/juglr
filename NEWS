@@ -1,4 +1,25 @@
 ========================
+2010-02-01: Juglr 0.1.0
+========================
+
+ * HTTPReader/Writer infrastructure for requests and responses
+
+ * Bugfix: Add unicode support to HTTP{Response,Request}Writer
+
+ * Bugfix: Allow returning Boxes other than MAPs from remote calls
+   to HTTPMessageBus
+
+ * Bugfix: re-create the internal buffer in JSonBoxReader on reset() if it
+   has been close()ed
+
+ * Make BoxReader.reset() always return 'this'
+
+ * Make the 'strategy' member of DelegatingActor and MulticastActor protected
+
+ * Add a sentinel method validate() to DelegatingActor and MulticastActor which
+   can block message propogation to the delegate actors
+
+========================
 2010-01-15: Juglr 0.0.2
 ========================
 

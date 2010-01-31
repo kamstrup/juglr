@@ -26,6 +26,10 @@ public class HTTPResponseReader extends HTTPReader {
 
     @Override
     public HTTP.Version readVersion() throws IOException {
+        // This is the first read, so fill the buffer
+        channel.read(buf);
+        buf.flip();
+
         HTTP.Version v = super.readVersion();
         if (readSpace()) {
             return v;

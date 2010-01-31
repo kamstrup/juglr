@@ -1,6 +1,7 @@
 package juglr.net;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -24,6 +25,41 @@ public class HTTPReader {
         this.buf = buf;
     }
 
+    /**
+     * Close the underlying channel if it's open
+     * @throws IOException if the underlying channel is open and there is an
+     *                     error closing the channel
+     */
+    public void close() throws IOException {
+        if (this.channel.isOpen()) {
+            this.channel.close();
+        }
+    }
+
+    /**
+     * Reset all state in the reader, preparing it for reading {@code channel}.
+     * @param channel the channel to start reading from. If the reader refers
+     * a channel then this channel will be closed.
+     *
+     * @return always returns {@code this}
+     * @throws IOException if the reader already refers an open channel and
+     *                     there is an error closing it
+     */
+    public HTTPReader reset(SocketChannel channel) throws IOException {
+        close();
+        this.channel = channel;
+        buf.clear();
+
+        return this;
+    }
+
+    /**
+     * Read a HTTP header line (termincated by {@code \r\n})
+     * @param target the buffer to read data into
+     * @return the number of bytes read into {@code target}. If this is 0
+     *         then this was the last header before the body and you may
+     *         invoke {@link #readBody} or {@link #streamBody()}
+     */
     public int readHeaderField(byte[] target) {
         int fieldEnd = buf.position();
 
@@ -57,12 +93,14 @@ public class HTTPReader {
         return -1;
     }
 
-    public int readBody(byte[] target) {
-        int numRead = Math.min(buf.remaining(), target.length);
-        buf.get(target, 0, numRead);
-        return numRead;
-    }
-
+    /**
+     * Read a numeric HTTP status code and return it as a {@link Status}
+     * @return a symbollic representation of the HTTP status code
+     * @throws IOException upon errors reading from the socket
+     * @throws UnsupportedStatusException if the server returns and uncommon
+     *                                    HTTP status code that is not supported
+     *                                    by Juglr
+     */
     public Status readStatus() throws IOException {
         if (buf.remaining() < 3) {
             throw new BufferUnderflowException();
@@ -114,8 +152,10 @@ public class HTTPReader {
      * protocol. The buffer will be positioned just after the last parsed
      * character upon method return
      * @return the HTTP version or {@link Version#ERROR} on errors
+     * @throws IOException upon errors reading from the socket
      */
     public HTTP.Version readVersion() throws IOException {
+        ensureBuffer();
         if (buf.get() == 'H' &&
                 buf.get() == 'T' &&
                 buf.get() == 'T' &&
@@ -133,55 +173,85 @@ public class HTTPReader {
         return Version.ERROR;
     }
 
+    /**
+     * Read the next byte and return {@code true} if it is a white space
+     * @return {@code true} if the next byte is a space, {@code false} otherwise
+     * @throws IOException upon errors reading from the socket
+     */
     public boolean readSpace() throws IOException {
-        if (buf.remaining() == 0) {
-            channel.read(buf);
-            buf.flip();
-        }
+        ensureBuffer();
         return buf.get() == ' ';
     }
 
+    /**
+     * Read the next byte and and check if it is a carriage return - if it is
+     * then read the second byte and check if it's a newline - and if both
+     * bytes are good return {@code true}.
+     * @return {@code true} if the next two bytes are {@code \r} and {@code \n}
+     *         {@code false} otherwise
+     * @throws IOException upon errors reading from the socket
+     */
     public boolean readLF() throws IOException {
-        if (buf.remaining() == 0) {
-            channel.read(buf);
-            buf.flip();
-        }
+        ensureBuffer();
         if (buf.get() != '\r') {
             return false;
         }
+        ensureBuffer();
+        return buf.get() == '\n';
+    }
+
+    public int readBody(byte[] target) throws IOException {
+        ensureBuffer();
+        int numRead = Math.min(buf.remaining(), target.length);
+        buf.get(target, 0, numRead);
+        return numRead;
+    }
+
+    public int readBody(byte[] target, int offset, int len) throws IOException {
+        ensureBuffer();
+        int numRead = Math.min(buf.remaining(), len);
+        buf.get(target, offset, numRead);
+        return numRead;
+    }
+
+    private void ensureBuffer()  throws IOException {
         if (buf.remaining() == 0) {
             channel.read(buf);
             buf.flip();
         }
-        return buf.get() == '\n';
-
     }
 
     /**
-     * Close the underlying channel if it's open
-     * @throws IOException if the underlying channel is open and there is an
-     *                     error closing the channel
+     * Read the message body as a stream, starting from the current position.
+     * When the returned stream is closed this reader will also be closed
+     * @return and input stream reading the message body from the socket
      */
-    public void close() throws IOException {
-        if (this.channel.isOpen()) {
-            this.channel.close();
-        }
-    }
+    public InputStream streamBody() {
+        return new InputStream() {
 
-    /**
-     * Reset all state in the reader, preparing it for reading {@code channel}.
-     * @param channel the channel to start reading from. If the reader refers
-     * a channel then this channel will be closed.
-     *
-     * @return always returns {@code this}
-     * @throws IOException if the reader already refers an open channel and
-     *                     there is an error closing it
-     */
-    public HTTPReader reset(SocketChannel channel) throws IOException {
-        close();
-        this.channel = channel;
-        buf.clear();
+            @Override
+            public int read() throws IOException {
+                if (buf.remaining() == 0) {
+                    channel.read(buf);
+                    buf.flip();
+                }
+                return buf.get();
+            }
 
-        return this;
+            @Override
+            public int read(byte[] b) throws IOException {
+                return readBody(b);
+            }
+
+            @Override
+            public int read(byte[] b, int offset, int len) throws IOException {
+                return readBody(b, offset, len);
+            }
+
+            @Override
+            public void close() throws IOException {
+                HTTPReader.this.close();
+            }
+        };
     }
 }

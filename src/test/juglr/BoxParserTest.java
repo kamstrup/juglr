@@ -40,6 +40,18 @@ public class BoxParserTest {
                                               .add(new Box(68))
                                               .add(new Box(true)))
         });
+        data.add(new Object[]{
+                "{\"__store__\": [{\"__index__\": [\"firstname\"], \"__base__\": \"mybase\", \"__id__\": \"mke\", \"firstname\": \"Mikkel\", \"lastname\": \"kamstrup\"}]}",
+                Box.newMap()
+                    .put("__store__", Box.newList()
+                        .add(Box.newMap()
+                            .put("__index__", Box.newList().add("firstname"))
+                            .put("__base__", "mybase")
+                            .put("__id__", "mke")
+                            .put("firstname", "Mikkel")
+                            .put("lastname", "kamstrup"))
+                     )
+        });
 
         return data.iterator();
     }

@@ -10,7 +10,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../juglr-0.0.2.jar!/" />
+          <root url="jar://$MODULE_DIR$/../juglr-0.1.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

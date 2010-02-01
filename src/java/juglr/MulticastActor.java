@@ -131,13 +131,19 @@ public class MulticastActor extends Actor {
 
     /**
      * Asynchronously send {@code msg} to all addresses determined by calling
-     * {@link Strategy#recipients}
+     * {@link Strategy#recipients}.
      * @param msg the incoming message
      */
     @Override
     public void react(Message msg) {
         if (!validate(msg)) return;
 
+        if (msg.getReplyTo() == null) {
+            msg.setReplyTo(msg.getSender());
+        }
+
+        /* Note that send() rewrites the sender,
+         * but keeps the replyTo intact if it's set */
         Iterator<Address> recipients = strategy.recipients(msg);
         while (recipients.hasNext()) {
             send(msg, recipients.next());

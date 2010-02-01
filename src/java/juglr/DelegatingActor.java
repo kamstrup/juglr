@@ -128,7 +128,9 @@ public class DelegatingActor extends Actor {
 
     /**
      * Asynchronously relay the incoming message to the address determined
-     * by calling {@link Strategy#recipient(Message)}
+     * by calling {@link Strategy#recipient(Message)}. The delegate can
+     * obtain the address of the original sender by calling
+     * {@link Message#getReplyTo()}.
      * @param msg the incoming message
      */
     @Override
@@ -141,9 +143,13 @@ public class DelegatingActor extends Actor {
             return;
         }
 
-        /* Send via the bus instead of this.send()
-         * to avoid rewriting the sender address */
-        getBus().send(msg, delegate);
+        if (msg.getReplyTo() == null) {
+            msg.setReplyTo(msg.getSender());
+        }
+
+        /* Note that send() rewrites the sender,
+         * but keeps the replyTo intact if it's set */
+        send(msg, delegate);
     }
 
     /**

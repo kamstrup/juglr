@@ -63,10 +63,10 @@ public class HTTPServerExample {
                 } else {
                     resp.put("response", "false");
                 }
-                send(resp, msg.getSender());
+                send(resp, msg.getReplyTo());
             } catch (NumberFormatException e) {
                 resp.put("error", "Not a valid integer: " + test.toString());
-                send(resp, msg.getSender());
+                send(resp, msg.getReplyTo());
             }
         }
     }

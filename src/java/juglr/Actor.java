@@ -100,7 +100,10 @@ public abstract class Actor {
 
     /**
      * Send a message to another actor. To send a reply to an incoming message
-     * do {@code send(myMsg, msg.getSender()}
+     * do {@code send(myMsg, msg.getSender()}.
+     * <p/>
+     * If the reply-to field of {@code msg} is not set, this method will set
+     * it to the address of {@code this}.
      *
      * @param msg the message to send
      * @param receiver the address of the actor to send to
@@ -108,6 +111,9 @@ public abstract class Actor {
      */
     public final void send(Message msg, Address receiver) {
         msg.setSender(this.getAddress());
+        if (msg.getReplyTo() == null) {
+            msg.setReplyTo(this.getAddress());
+        }
         bus.send(msg, receiver);
     }
 

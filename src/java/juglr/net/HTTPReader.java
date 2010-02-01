@@ -162,14 +162,16 @@ public class HTTPReader {
                 buf.get() == 'P' &&
                 buf.get() == '/' &&
                 buf.get() == '1' &&
-                buf.get() == '.')
-            if (buf.get() == '0') {
+                buf.get() == '.') {
+            byte last = buf.get();
+            if (last == '0') {
                 return Version.ONE_ZERO;
-            } else if (buf.get() == '1') {
+            } else if (last == '1') {
                 return Version.ONE_ONE;
             } else {
                 return Version.UNKNOWN;
             }
+        }
         return Version.ERROR;
     }
 

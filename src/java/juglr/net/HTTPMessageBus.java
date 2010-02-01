@@ -161,7 +161,15 @@ public class HTTPMessageBus extends MessageBus {
                         int hlength = Handler.length(handler);
                         String args = new String(
                                    buf, hlength + 1, uriLength - hlength - 1);
+
                         HTTP.Version ver = req.readVersion();
+                        if (ver == HTTP.Version.ERROR ||
+                            ver == HTTP.Version.UNKNOWN) {
+                            respondError(HTTP.Status.BadRequest,
+                                   "Illegal HTTP protocol version declaration");
+                                return;
+                        }
+
 
                         while (req.readHeaderField(buf) > 0) {
                             // Skip HTTP headers

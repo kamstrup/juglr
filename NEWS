@@ -1,4 +1,18 @@
 ========================
+2010-MM-DD: Juglr 0.20
+========================
+
+ * Introduce the concept of reply-to addresses on messages. Generally
+   actors should reply to msg.getReplyTo() instead of msg.getSender().
+   This facilitates proper routing of messages in non-trivial topologies.
+
+========================
+2010-02-01: Juglr 0.1.1
+========================
+
+ * Brown paper bag release (forgot version bump when creating git tag)
+
+========================
 2010-02-01: Juglr 0.1.0
 ========================
 

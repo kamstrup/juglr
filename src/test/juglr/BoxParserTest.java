@@ -4,9 +4,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  *
@@ -63,5 +61,42 @@ public class BoxParserTest {
         Box result = parser.parse(json);
         assertEquals(result,expected);
 
+    }
+
+    @Test
+    public void threadSafety() throws Exception {
+        final String json = "{\"__store__\": [{\"__index__\": [\"firstname\"], \"__base__\": \"mybase\", \"__id__\": \"mke\", \"firstname\": \"Mikkel\", \"lastname\": \"kamstrup\"}]}";
+        final BoxParser parser = new JSonBoxParser();
+        final List<Throwable> errors =
+                Collections.synchronizedList(new LinkedList<Throwable>());
+        Thread[] threads = new Thread[20];
+        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        for (int i = 0; i < 10; i++) {
+                            parser.parse(json);
+                        }
+                    } catch (Throwable t) {
+                        errors.add(t);
+                    }
+                }
+            });
+        }
+
+        for (Thread thread : threads) {
+            thread.start();
+        }
+
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
+        if (errors.size() != 0) {
+            for (Throwable t : errors) {
+                t.printStackTrace();
+            }
+            fail();
+        }
     }
 }

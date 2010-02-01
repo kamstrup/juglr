@@ -167,11 +167,8 @@ public class HTTPMessageBus extends MessageBus {
                             // Skip HTTP headers
                         }
 
-                        int bodyLength = req.readBody(buf);
-                        InputStream bodyStream = new ByteArrayInputStream(
-                                                            buf, 0, bodyLength);
-                        Reader bodyReader = new InputStreamReader(bodyStream);
-
+                        Reader bodyReader =
+                                     new InputStreamReader(req.streamBody());
                         dispatch(method, handler, args, bodyReader);
                     } catch (IOException e) {
                         // Error writing response

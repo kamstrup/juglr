@@ -240,7 +240,7 @@ public class HTTPMessageBus extends MessageBus {
                                 msg = msgParser.parse(msgBody);
                             } catch (MessageFormatException e) {
                                 respondError(HTTP.Status.BadRequest,
-                                        "Illegal JSON POST data");
+                                   "Illegal JSON POST data. " + e.getMessage());
                                 return;
                             }
 

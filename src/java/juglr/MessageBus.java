@@ -66,8 +66,9 @@ public class MessageBus {
     /**
      * Get a reference to the default {@code MessageBus} instance for the
      * runtime. If there is no instance yet a new one will be created.
-     * By a {@link MessageBus} will be created, but you may specify another
-     * {@code MessageBus} class in the system property {@code juglr.busclass}.
+     * By a default {@link MessageBus} will be created, but you may specify
+     * another {@code MessageBus} class in the system property
+     * {@code juglr.busclass}.
      * <p/>
      * {@link Actor}s created without a reference to a message bus will use the
      * message bus obtained from calling this method.

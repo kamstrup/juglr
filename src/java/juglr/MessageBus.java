@@ -34,8 +34,15 @@ public class MessageBus {
 
         @Override
         public void compute() {
-            Actor actor = bus.lookup(receiver);
-            actor.dispatchReact(msg);
+            try {
+                Actor actor = bus.lookup(receiver);
+                actor.dispatchReact(msg);
+            } catch (Throwable t) {
+                t.printStackTrace();
+                System.err.println(String.format(
+                     "Unhandled exception from '%s'. Shutting down", receiver));
+                System.exit(27);
+            }
         }
     }
 
@@ -55,8 +62,15 @@ public class MessageBus {
 
         @Override
         public void compute() {
-            Actor actor = bus.lookup(receiver);
-            actor.start();
+            try {
+                Actor actor = bus.lookup(receiver);
+                actor.start();
+            } catch (Throwable t) {
+                t.printStackTrace();
+                System.err.println(String.format(
+                     "Unhandled exception from '%s'. Shutting down", receiver));
+                System.exit(28);
+            }
         }
     }
 
@@ -103,6 +117,14 @@ public class MessageBus {
         addressSpace = new HashMap<String,Actor>();
 
         pool.setAsyncMode(true);
+        pool.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler(){
+            public void uncaughtException(Thread t, Throwable e) {
+                e.printStackTrace();
+                System.err.println(String.format(
+                     "Unhandled exception from thread '%s'. Shutting down", t));
+                System.exit(29);
+            }
+        });
     }
 
     public Address allocateUniqueAddress(final Actor actor) {
@@ -181,6 +203,12 @@ public class MessageBus {
         return addressSpace.get(address.externalize());
     }
 
+    /**
+     * Look up an {@link Address} for given string.
+     * @param address the external string form of the address to look up
+     * @return The address which' external form is {@code address} or
+     *         {@code null} in case no such address is registered on the bus
+     */
     public Address lookup(String address) {
         Actor actor = addressSpace.get(address);
         return actor == null ? null : actor.getAddress();

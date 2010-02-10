@@ -1,5 +1,6 @@
 package juglr.net;
 
+import com.sun.xml.internal.bind.v2.util.ByteArrayOutputStreamEx;
 import juglr.Box;
 import juglr.BoxParser;
 import juglr.JSonBoxParser;
@@ -8,8 +9,15 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,13 +27,42 @@ import java.util.List;
  */
 public class HTTPResponseReaderTest {
 
+    static int serverCounter = 0;
+
+    // Return a SocketChannel that reads the content of 'msg'
+    private SocketChannel prepareSocket(final ByteBuffer msg) throws Exception {
+        final ServerSocketChannel serverChannel = ServerSocketChannel.open();
+        SocketChannel clientChannel = SocketChannel.open();
+
+        serverChannel.socket().bind(null);
+        SocketAddress serverAddr = serverChannel.socket().getLocalSocketAddress();
+
+        Thread server = new Thread(new Runnable() {
+
+            public void run() {
+                try {
+                    SocketChannel channel = serverChannel.accept();
+                    channel.write(msg);
+                    channel.close();
+                } catch (IOException e) {
+                    fail("Failed writing message to socket", e);
+                }
+            }
+        }, "Server"+(++serverCounter));
+        server.start();
+
+        clientChannel.connect(serverAddr);
+        return clientChannel;
+    }
+
     /*
      * Generate (in_data, out_expected) pairs of HTTP responses
      */
     @DataProvider(name="response")
-    public Iterator<Object[]> responseProvider() {
+    public Iterator<Object[]> responseProvider() throws Exception {
         List<Object[]> data = new ArrayList<Object[]>();
 
+        // A few headers, small ascii body
         ByteBuffer buf = ByteBuffer.allocate(1024);
         String msg =
                 "HTTP/1.0 200 OK\r\n" +
@@ -36,13 +73,14 @@ public class HTTPResponseReaderTest {
         buf.put(msg.getBytes());
         buf.flip();
         data.add(new Object[]{
-                buf,
+                prepareSocket(buf),
                 HTTP.Version.ONE_ZERO,
                 HTTP.Status.OK,
                 2,
                 "0123456789"
         });
 
+        // No headers, small unicode body
         buf = ByteBuffer.allocate(1024);
         msg =
                 "HTTP/1.0 200 OK\r\n" +
@@ -51,21 +89,43 @@ public class HTTPResponseReaderTest {
         buf.put(msg.getBytes());
         buf.flip();
         data.add(new Object[]{
-                buf,
+                prepareSocket(buf),
                 HTTP.Version.ONE_ZERO,
                 HTTP.Status.OK,
                 0,
                 "aoeaa-æøå"
         });
 
+        // One header, large odd-sized ascii body
+        buf = ByteBuffer.allocate(206577);
+        msg =
+                "HTTP/1.0 200 OK\r\n" +
+                "Server: juglr\r\n" +
+                "\r\n";
+        buf.put(msg.getBytes());
+        byte[] body = new byte[buf.remaining()];
+        for (int i = 0; i < buf.remaining(); i++) {
+            body[i] = 'z';
+        }
+        buf.put(body);
+        buf.flip();
+        data.add(new Object[]{
+                prepareSocket(buf),
+                HTTP.Version.ONE_ZERO,
+                HTTP.Status.OK,
+                1,
+                new String(body)
+        });
+        
         return data.iterator();
     }
 
     @Test(dataProvider="response")
-    public void readHeader(ByteBuffer buf, HTTP.Version version,
-                           HTTP.Status status, int numHeaders, String body)
+    public void readHeader(SocketChannel channel, HTTP.Version version,
+                           HTTP.Status status, int numHeaders,
+                           String expectedBody)
                                                               throws Exception {
-        HTTPResponseReader r = new HTTPResponseReader(null, buf);
+        HTTPResponseReader r = new HTTPResponseReader(channel);
 
         HTTP.Version v = r.readVersion();
         assertEquals(v, version);
@@ -81,9 +141,17 @@ public class HTTPResponseReaderTest {
         }
         assertEquals(_numHeaders, numHeaders);
 
-        numRead = r.readBody(_buf);
-        String _body = new String(_buf, 0, numRead);
-        assertEquals(_body, body);
+        InputStream bodyStream = r.streamBody();
+        ByteArrayOutputStream _body = new ByteArrayOutputStream();
+        while ((numRead = bodyStream.read(_buf)) != -1) {
+            _body.write(_buf, 0, numRead);
+        }
+
+        String actualBody = new String(_body.toByteArray());
+        assertEquals(actualBody.length(), expectedBody.length());
+        assertEquals(actualBody, expectedBody);
+
+        r.close();
     }
 
 }

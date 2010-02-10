@@ -203,21 +203,22 @@ public class HTTPReader {
     }
 
     public int readBody(byte[] target) throws IOException {
-        ensureBuffer();
-        int numRead = Math.min(buf.remaining(), target.length);
-        buf.get(target, 0, numRead);
-        return numRead;
+        return readBody(target, 0, target.length);
     }
 
     public int readBody(byte[] target, int offset, int len) throws IOException {
         ensureBuffer();
         int numRead = Math.min(buf.remaining(), len);
-        buf.get(target, offset, numRead);
-        return numRead;
+        if (numRead > 0) {
+            buf.get(target, offset, numRead);
+            return numRead;
+        }
+        return -1;
     }
 
     private void ensureBuffer()  throws IOException {
         if (buf.remaining() == 0) {
+            buf.clear();
             channel.read(buf);
             buf.flip();
         }
@@ -233,11 +234,12 @@ public class HTTPReader {
 
             @Override
             public int read() throws IOException {
-                if (buf.remaining() == 0) {
-                    channel.read(buf);
-                    buf.flip();
+                ensureBuffer();
+                try {
+                    return 128 + buf.get();
+                } catch (BufferUnderflowException e) {
+                    return -1;
                 }
-                return buf.get();
             }
 
             @Override

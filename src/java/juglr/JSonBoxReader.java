@@ -5,12 +5,15 @@ import java.util.Map;
 
 /**
  * Serialize a {@link Message} object to JSON. To save system resources you can
- * reuse the same JSonBoxReader by calling
- * {@link #reset(Box)} when starting the serialization of a
- * new message.
+ * reuse the same JSonBoxReader by calling {@link #reset(Box)} when starting
+ * the serialization of a new message.
+ * <p/>
+ * Note that contrary to {@link JSonBoxReader} this class is not thread
+ * safe.
  *
  * @see Box
  * @see BoxReader
+ * @see JSonBoxReader
  */
 public class JSonBoxReader extends BoxReader {
 

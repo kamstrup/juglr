@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MessageBus {
 
     /**
-     *
+     * Closure invoking the actor.react() method with a given message
      */
     static class ForkJoinMessageClosure extends RecursiveAction {
 
@@ -47,7 +47,7 @@ public class MessageBus {
     }
 
     /**
-     *
+     * Closure invoking actor.start()
      */
     static class ForkJoinStartClosure extends RecursiveAction {
 
@@ -110,7 +110,17 @@ public class MessageBus {
     private Map<String,Actor> addressSpace;
 
     /**
-     * Create a new MessageBus
+     * Create a new, empty, MessageBus. Note that actor by default register
+     * on the bus provided by {@link #getDefault()}. If you want actors to
+     * register on a non-default bus you must pass in the bus as a parameter
+     * in the actor's constructor.
+     * <p/>
+     * Unless you have specific requirements you are advised to use
+     * the {@link #getDefault()} to obtain a bus instance instead of invoking
+     * this method directly.
+     *
+     * @see #getDefault()
+     * @see Actor#Actor(MessageBus) 
      */
     public MessageBus() {
         pool = new ForkJoinPool();
@@ -136,6 +146,24 @@ public class MessageBus {
         return address;
     }
 
+    /**
+     * Assign a named address to {@code actor}. Note that named addresses
+     * <i>must</i> start with a {@code /}. So if have an actor responsible
+     * for flushing messages to persistent storage, you could assign it
+     * the well known address {@code /store}. Actors in need of storing
+     * a message would not need to know the unique address of the storage
+     * actor, simply be aware of the of the agreement that the storage actor
+     * is available under the {@code /store} address.
+     *
+     * @param actor The actor to associate the named address with
+     * @param name the address to assign
+     * @return the {@link Address} instance created to represent the named
+     *         address
+     * @throws AddressAlreadyOwnedException if the address is already owned
+     *                                      by an actor
+     * @throws IllegalAddressException if {@code name} doesn't start with a
+     *                                 {@code /}
+     */
     public synchronized Address allocateNamedAddress(Actor actor, String name)
                                            throws AddressAlreadyOwnedException {
         if (addressSpace.containsKey(name)) {
@@ -154,10 +182,22 @@ public class MessageBus {
         return address;
     }
 
+    /**
+     * Release a unique- or named address. Actors wishing to retract from the
+     * bus should call this method with the value of their {@code getAddress()}
+     * method as well as with any named addresses they own.
+     * @param address the address to release
+     * @return {@code true} if the address existed on the bus and has been
+     *         removed. Returns {@code false} if the address was not known
+     */
     public boolean freeAddress(Address address) {
         return addressSpace.remove(address.externalize()) != null;
     }
 
+    /**
+     * Iterate through all unique- and named addresses on the bus
+     * @return and iterator over all addresses registered on the bus
+     */
     public Iterator<Address> list() {
         /* We delegate work to this iter to be able to resolve the returned
          * addresses most efficiently without looking them up.
@@ -183,6 +223,13 @@ public class MessageBus {
         };
     }
 
+    /**
+     * Asynchronously send {@code msg} to {@code recipient}. Note that
+     * it is highly recommended to never send messages containing mutable
+     * state unless you know exactly what you are doing.
+     * @param msg  the message to send
+     * @param recipient the address of the recipient actor
+     */
     public void send(Message msg, Address recipient) {
         if (recipient == null) {
             throw new NullPointerException("Recipient address is null");
@@ -190,6 +237,10 @@ public class MessageBus {
         pool.submit(new ForkJoinMessageClosure(this, msg, recipient));
     }
 
+    /**
+     * Asynchronously invoke the {@link Actor#start()} on the recipient actor
+     * @param recipient the address of the actor to start
+     */
     public void start(Address recipient) {
         pool.submit(new ForkJoinStartClosure(this, recipient));
     }
@@ -204,7 +255,8 @@ public class MessageBus {
     }
 
     /**
-     * Look up an {@link Address} for given string.
+     * Look up an {@link Address} for given string. Note that addresses
+     * normally start with a {@code /}.
      * @param address the external string form of the address to look up
      * @return The address which' external form is {@code address} or
      *         {@code null} in case no such address is registered on the bus

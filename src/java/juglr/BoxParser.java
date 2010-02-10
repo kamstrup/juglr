@@ -6,8 +6,10 @@ import java.io.IOException;
 
 /**
  * Interface for parsers cabable of parsing {@link Box} objects
- * from character streams.
+ * from character streams. Note that all implementations of this interface
+ * should be thread safe.
  *
+ * @see Box
  * @see BoxReader
  * @see JSonBoxParser
  */

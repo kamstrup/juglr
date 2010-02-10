@@ -9,7 +9,12 @@ import java.io.*;
 import java.util.Iterator;
 
 /**
+ * Helper class for parsing strings, readers, or files into {@link Box}
+ * instanses. Note that all methods on this class are thread safe.
  *
+ * @see BoxReader
+ * @see JSonBoxReader
+ * @see Box
  */
 public class JSonBoxParser implements BoxParser {
 

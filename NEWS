@@ -6,6 +6,8 @@
    HTTPResponseReader. Before this fix it was constrained to the size of a
    single buffer (1024 bytes)
 
+ * Improve javadocs 
+
 ========================
 2010-02-04: Juglr 0.2.0
 ========================

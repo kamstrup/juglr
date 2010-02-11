@@ -29,9 +29,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * There are two central callback methods actors can override, namely
  * {@link #react} and {@link #start}. As a rule of thumb these methods should
  * never block in order not to starvate the underlying threadpool of the
- * message bus. There are three legal ways for an actor to block, notably
- * {@link #awaitMessage()}, {@link #await(Callable)},
- * and {@link #awaitTimeout(long)}.
+ * message bus. There are a few legal ways for an actor to block, notably
+ * {@link #await(Callable)} and {@link #awaitTimeout(long)}.
  * <p/>
  * <h3>Parallelizing Work</h3>
  * Each actor is guaranteed to only be handling one message at a time.
@@ -47,12 +46,6 @@ public abstract class Actor {
 
     private MessageBus bus;
     private Address address;
-    private ManagedBlocker messageBlocker;
-    private final Lock dispatchLock = new ReentrantLock();
-    private final Condition publicPostFlag  = dispatchLock.newCondition();
-    private final Condition privatePostFlag = dispatchLock.newCondition();
-    private Message waitingMessage;
-    private boolean waitingForPrivatePostFlag;
 
     /**
      * Create an actor connected to the default message bus
@@ -70,7 +63,6 @@ public abstract class Actor {
     public Actor(MessageBus bus) {
         this.bus = bus;
         address = bus.allocateUniqueAddress(this);
-        waitingMessage = null;
     }
 
     /**
@@ -115,55 +107,6 @@ public abstract class Actor {
             msg.setReplyTo(this.getAddress());
         }
         bus.send(msg, receiver);
-    }
-
-    /**
-     * Block until a message is received and return the message. The blocking is
-     * done in a manner where the thread pool of the message bus does not risk
-     * starvation.
-     * <p/>
-     * This method must only be called within the {@link #react} and
-     * {@link #start} methods of the actor. 
-     * <p/>
-     * In general it is most effective to not use this method and simply
-     * rely on {@link #react} and some sort of state machine. However there
-     * are cases where the business logic becomes complex or where optimal
-     * performance is less important.
-     *
-     * @return the newly arrived message or {@code null} in case the actor was
-     *         interrupted while waiting for a message
-     */
-    public final Message awaitMessage () {
-        if (messageBlocker == null) {
-            messageBlocker = new ManagedBlocker() {
-
-                public boolean block() throws InterruptedException {
-                    // Release dispatchLock
-                    privatePostFlag.await();
-
-                    return isReleasable();
-                }
-
-                public boolean isReleasable() {
-                    return waitingMessage != null;
-                }
-            };
-        }
-
-        try {
-            waitingMessage = null;
-            waitingForPrivatePostFlag = true;
-            ForkJoinPool.managedBlock(messageBlocker, true);
-            Message incoming = waitingMessage;
-            waitingMessage = null;
-            waitingForPrivatePostFlag = false;
-            publicPostFlag.signal();
-            return incoming;
-        } catch (InterruptedException e) {
-            // Ignore interrupts, we *likely* have waitingMessage == null,
-            // but this is OK by our contract
-            return null;
-        }
     }
 
     /**
@@ -231,24 +174,8 @@ public abstract class Actor {
      * @param msg the message to invoke react() on
      */
     void dispatchReact(Message msg) {
-        /* If actor is stuck in a awaitMessage() then pass the message
-         * into this context, notify the waiting thread, and return
-         */
-        dispatchLock.lock();
         try {
-            if (waitingMessage != null || waitingForPrivatePostFlag) {
-                while (waitingMessage != null) {
-                    try {
-                        publicPostFlag.await();
-                    } catch (InterruptedException e) {
-                        // Ignore
-                    }                    
-                }
-                waitingMessage = msg;
-                privatePostFlag.signal();
-                return;
-            } else {
-                /* All is well */
+            synchronized (this) {
                 react(msg);
             }
         } catch (Throwable t) {
@@ -258,8 +185,23 @@ public abstract class Actor {
              "Error caught from actor '%s' while processing the message %s: %s",
              this, msg, t));
             t.printStackTrace();
-        } finally {
-            dispatchLock.unlock();
+        }
+    }
+
+    /**
+     * This method ensures that access to start() is always synchronized
+     */
+    void dispatchStart() {
+        try {
+            synchronized (this) {
+                start();
+            }
+        } catch (Throwable t) {
+            /* Catch anything, since we can't trust start() and we are running
+             * in a thread, so exceptions will silently vanish if uncaught */
+            System.err.println(String.format(
+             "Error caught from actor '%s' while starting it: %s", this, t));
+            t.printStackTrace();
         }
     }
 
@@ -279,10 +221,6 @@ public abstract class Actor {
      * that actors only handle one message at a time. For a discussion on how
      * to parallelize message processing see the section in the class
      * documentation.
-     * <p/>
-     * You can await messages from withing this method by calling
-     * {@link #awaitMessage()}. To prepare for handling the next message
-     * in a clean context simply return from this method call.
      * <p/>
      * Blocking operations, such as IO, should be done within an
      * {@link #await(Callable)} call.

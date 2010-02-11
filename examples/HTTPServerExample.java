@@ -50,7 +50,7 @@ public class HTTPServerExample {
             Box box = (Box)msg;
             if (!box.has("isPrime")) {
                 resp.put("error", "No 'isPrime' key in request");
-                send(resp, msg.getSender());
+                send(resp, msg.getReplyTo());
                 return;
             }
 

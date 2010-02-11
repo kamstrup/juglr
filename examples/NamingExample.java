@@ -26,7 +26,7 @@ public class NamingExample {
 
         @Override
         public void react(Message msg) {
-            send(new Box("You found me!"), msg.getSender());
+            send(new Box("You found me!"), msg.getReplyTo());
         }
     }
 

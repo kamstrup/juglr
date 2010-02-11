@@ -46,8 +46,8 @@ public class PingPongExample {
         public void react(Message msg) {
             pings++;
             System.out.println(
-             "[" + this + "] replying to " + msg.getSender());
-            send(new Message(), msg.getSender());
+             "[" + this + "] replying to " + msg.getReplyTo());
+            send(new Message(), msg.getReplyTo());
         }
     }
 

@@ -64,7 +64,7 @@ public class MessageBus {
         public void compute() {
             try {
                 Actor actor = bus.lookup(receiver);
-                actor.start();
+                actor.dispatchStart();
             } catch (Throwable t) {
                 t.printStackTrace();
                 System.err.println(String.format(

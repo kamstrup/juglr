@@ -14,14 +14,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A flexible light weight HTTP server
+ * A generic light weight HTTP server handling requests by forwarding them
+ * to a set of actors - and sending the reponse from the actor back to the
+ * client. The "backend" actors functions much as bottom halves in system
+ * level interrupt programming. The requets dispatching done by this class
+ * would be the upper half.
  *
  * @author Mikkel Kamstrup Erlandsen <mailto:mke@statsbiblioteket.dk>
  * @since Feb 15, 2010
  */
 public class HTTPServer {
 
-    private static class Handler {
+    static class Handler {
         Matcher path;
         Address bottomHalf;
         HTTP.Method[] methods;
@@ -31,8 +35,9 @@ public class HTTPServer {
                                            new CopyOnWriteArrayList<Handler>();
     final ThreadLocal<List<Handler>> handlers =
                                               new ThreadLocal<List<Handler>>();
-    TCPServerActor tcpServer;
+    Address tcpServer;
     MessageBus bus;
+    boolean isStarted;
 
     public HTTPServer(int port) throws IOException {
         this(port, MessageBus.getDefault());
@@ -40,21 +45,57 @@ public class HTTPServer {
 
     public HTTPServer(int port, MessageBus messageBus) throws IOException {
         bus = messageBus;
-        tcpServer = new TCPServerActor(port, new BottomHalvesStrategy(), bus);
+        tcpServer = new TCPServerActor(
+                            port, new BottomHalvesStrategy(), bus).getAddress();
+        isStarted = false;
     }
 
+    /**
+     * Configure all requests with URLs matching {@code pathRegex} to be handled
+     * by the actor living at the {@code handler} address.
+     * <p/>
+     * Note that {@code handler} <i>must</i> reply with a {@link Box} to any
+     * incoming message, sending the reply to {@code msg.getReplyTo()}. It is
+     * strongly recommended that this be done in a finally clause.
+     * <p/>
+     * When looking up a matching handler the first matching one will be used.
+     * The handlers are checked in the order they are registered.
+     *
+     * @param urlRegex A regular expression the request URL must match
+     *        for the request to be forwarded to {@code handler}
+     * @param handler the address of the actor that handles the request
+     * @param methods the HTTP methods the handler can accept
+     */
     public void registerHandler(
-                    String pathRegex, Address handler, HTTP.Method... methods) {
+                    String urlRegex, Address handler, HTTP.Method... methods) {
+        if (isStarted) {
+            throw new IllegalStateException(
+                  "Handlers can not be registered after HTTPServer is started");
+        }
         Handler h = new Handler();
-        h.path = Pattern.compile(pathRegex).matcher("");
+        h.path = Pattern.compile(urlRegex).matcher("");
         h.bottomHalf = handler;
         h.methods = methods;
         canonicalHandlers.add(h);
     }
 
-    public Address findHandler(HTTP.Method method, CharSequence path) {
+    /**
+     * Start listening on the configured port
+     */
+    public void start() {
+        isStarted = true;
+        bus.start(tcpServer);
+    }
+
+    /**
+     * Get a thread local list of handlers with all mutable state safe for use
+     * by the calling thread
+     * @return a list of handlers registered for the server
+     */
+    private List<Handler> threadLocalHandlers() {
         // We use a thread local copy of our handlers list for matching
-        // to ensure lockless lookups of the right bottom half
+        // to ensure lockless lookups of the right bottom half  - otherwise
+        // we'd need a lock when using _h.path
         List<Handler> _handlers = handlers.get();
         if (_handlers == null) {
             _handlers = new ArrayList<Handler>(canonicalHandlers.size());
@@ -67,20 +108,7 @@ public class HTTPServer {
             }
             handlers.set(_handlers);
         }
-
-        // Since _handlers is thread local, we don't have a critical region
-        // around the java.util.regex.Matcher h.path
-        for (Handler h : _handlers) {
-            for (HTTP.Method m : h.methods) {
-                if (m == method) {
-                    h.path.reset(path);
-                    if (h.path.matches()) {
-                        return h.bottomHalf;
-                    }
-                }
-            }
-        }
-        return null;
+        return _handlers;
     }
 
     /**
@@ -134,9 +162,8 @@ public class HTTPServer {
                         HTTP.Method method = req.readMethod();
 
                         int uriLength = req.readURI(buf);
-                        CharSequence uri =
-                              ByteBuffer.wrap(buf, 0, uriLength).asCharBuffer();
-                        Address bottomHalf = findHandler(method, uri);
+                        String uri = new String(buf, 0, uriLength);
+                        Address bottomHalf = findBottomHalf(method, uri);
 
                         if (bottomHalf == null) {
                             respondError(HTTP.Status.NotFound,
@@ -210,6 +237,24 @@ public class HTTPServer {
                     // BH should respond with a box to msg.getReplyTo()
                     // FIXME: We need a timeout to avoid leaking SocketChannels
                     send(msg, bottomHalf);
+                }
+
+                private Address findBottomHalf(
+                                         HTTP.Method method, CharSequence url) {
+                    // Since _handlers is thread local, we don't have a critical
+                    // region around the java.util.regex.Matcher h.path
+                    List<Handler> _handlers = threadLocalHandlers();
+                    for (Handler h : _handlers) {
+                        for (HTTP.Method m : h.methods) {
+                            if (m == method) {
+                                h.path.reset(url);
+                                if (h.path.matches()) {
+                                    return h.bottomHalf;
+                                }
+                            }
+                        }
+                    }
+                    return null;
                 }
             };
         }

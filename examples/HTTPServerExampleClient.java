@@ -25,8 +25,8 @@ public class HTTPServerExampleClient {
 
             // Send request
             HTTPRequestWriter w = new HTTPRequestWriter(channel, buf);
-            w.writeMethod(HTTP.Method.POST);
-            w.writeUri("/actor/calc/");
+            w.writeMethod(HTTP.Method.GET);
+            w.writeUri("/calc/");
             w.writeVersion(HTTP.Version.ONE_ZERO);
             w.writeHeader("User-Agent", "Juglr/0.2");
             w.startBody();
@@ -38,7 +38,7 @@ public class HTTPServerExampleClient {
             HTTPResponseReader r = new HTTPResponseReader(channel, buf);
             HTTP.Version v = r.readVersion();
             if (v == HTTP.Version.ERROR || v == HTTP.Version.UNKNOWN) {
-                throw new IOException("Bad protocol version version");
+                throw new IOException("Bad protocol version");
             }
             int status = r.readStatus().httpOrdinal();
             if (status < 200 || status >= 300) {

@@ -4,13 +4,13 @@
  * over three parallel calculators.
  * <p/>
  * Compile with:
- *     javac -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar HTTPServerExample.java
+ *     javac -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.3.0.jar HTTPServerExample.java
  *
  * Run with:
- *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar:. HTTPServerExample
+ *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.3.0.jar:. HTTPServerExample
  * <p/>
- * JSON messages should be <code>POST</code>ed to
- * <a href="http://localhost:4567/actor/calc">http://localhost:4567/calc</a>
+ * JSON messages should be send to
+ * <a href="http://localhost:4567/calc">http://localhost:4567/calc</a>
  * looking like:
  * <pre>
  * {
@@ -18,24 +18,23 @@
  * }
  * </pre>
  *
- * To invoke the 'list' or 'ping' handlers you can point your browser at
- * <a href="http://localhost:4567/list">http://localhost:4567/list</a> or
- * <a href="http://localhost:4567/ping/calc">http://localhost:4567/ping/calc</a>.
- * Or simply use a command line tool like <code>wget</code> or <code>curl</code>
- * to send <code>GET</code> requests to those URLs.
- * <p/>
- * To POST an isPrime request using <code>curl</code> use the following command
+ * To send an isPrime request using <code>curl</code> use the following command
  * in a Unix terminal:
  * <pre>
- *     curl http://localhost:4567/actor/calc --data '{ "isPrime" : 982451653 }'
+ *     curl -XGET http://localhost:4567/calc --data '{ "isPrime" : 982451653 }'
  * </pre>
  */
 
 import juglr.*;
+import juglr.net.HTTP;
+import juglr.net.HTTPServer;
 
 import static juglr.Box.Type;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.CharBuffer;
 
 public class HTTPServerExample {
 
@@ -72,14 +71,15 @@ public class HTTPServerExample {
     }
 
     public static void main (String[] args) throws Exception {
-        // Make sure the default message bus is HTTPMessageBus
-        System.setProperty("juglr.busclass", "juglr.net.HTTPMessageBus");
-
         // Delegate work to three CalcActors in a round-robin manner
         Actor actor = new DelegatingActor(
                 new CalcActor(), new CalcActor(), new CalcActor());
         MessageBus.getDefault().allocateNamedAddress(actor, "calc");
         MessageBus.getDefault().start(actor.getAddress());
+
+        HTTPServer server = new HTTPServer(4567);
+        server.registerHandler("^/calc/?$", actor.getAddress(), HTTP.Method.GET);
+        server.start();
 
         // Indefinite non-busy block
         synchronized (actor) {

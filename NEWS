@@ -1,4 +1,17 @@
 ========================
+2010-02-DD: Juglr 0.3.0
+========================
+
+ * Remove the method Actor.awaitMessage() as it incurred a massive complexity
+   on the whole actor class. Unless we can find a way to lazily initilaize the
+   required locks and code paths then this method will not be reinstated. If you
+   where not using this method all you need to know is that Actor creation
+   and react() dispatching is now a lot faster!
+
+ * Implement a generic actor-powered HTTPServer class and make the example
+ in examples/HTTPServerExample use it
+
+========================
 2010-02-10: Juglr 0.2.1
 ========================
 

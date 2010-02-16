@@ -65,6 +65,8 @@ public class HTTPServer {
      *        for the request to be forwarded to {@code handler}
      * @param handler the address of the actor that handles the request
      * @param methods the HTTP methods the handler can accept
+     * @throws IllegalStateException if the server has had its {@link #start()}
+     *                               method invoked
      */
     public void registerHandler(
                     String urlRegex, Address handler, HTTP.Method... methods) {
@@ -80,9 +82,14 @@ public class HTTPServer {
     }
 
     /**
-     * Start listening on the configured port
+     * Start listening on the configured port. After invoking start the
+     * {@link #registerHandler} should not be called again
+     * @throws IllegalStateException if the server has already been started
      */
     public void start() {
+        if (isStarted) {
+            throw new IllegalStateException("HTTPServer already started");
+        }
         isStarted = true;
         bus.start(tcpServer);
     }
@@ -182,7 +189,7 @@ public class HTTPServer {
 
 
                         while (req.readHeaderField(buf) > 0) {
-                            // Skip HTTP headers
+                            // FIXME: We ignore HTTP headers
                         }
 
                         Reader bodyReader =

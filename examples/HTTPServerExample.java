@@ -73,7 +73,7 @@ public class HTTPServerExample {
         // Delegate work to three CalcActors in a round-robin manner
         Actor actor = new DelegatingActor(
                 new CalcActor(), new CalcActor(), new CalcActor());
-        MessageBus.getDefault().allocateNamedAddress(actor, "calc");
+        MessageBus.getDefault().allocateNamedAddress(actor, "/calc");
         MessageBus.getDefault().start(actor.getAddress());
 
         HTTPServer server = new HTTPServer(4567);

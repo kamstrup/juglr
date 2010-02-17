@@ -45,6 +45,8 @@ public class HTTPServerExample {
             Box resp = Box.newMap();
             Box box = ((HTTPRequest)msg).getBody();
             if (!box.has("isPrime")) {
+                // We need to set an error state, so we have to wrap the
+                // response to the upper half in a HTTPResponse
                 resp.put("error", "No 'isPrime' key in request");
                 send(new HTTPResponse(HTTP.Status.BadRequest, resp),
                      msg.getReplyTo());
@@ -60,7 +62,10 @@ public class HTTPServerExample {
                 } else {
                     resp.put("response", "false");
                 }
-                send(new HTTPResponse(HTTP.Status.OK, resp), msg.getReplyTo());
+
+                // Sending a plain old Box back to the upper half
+                // results in a 200 OK
+                send(resp, msg.getReplyTo());
             } catch (NumberFormatException e) {
                 resp.put("error", "Not a valid integer: " + test.toString());
                 send(new HTTPResponse(HTTP.Status.BadRequest, resp),

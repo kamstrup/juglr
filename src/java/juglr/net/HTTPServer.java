@@ -14,10 +14,15 @@ import java.util.regex.Pattern;
 
 /**
  * A generic light weight HTTP server handling requests by forwarding them
- * to a set of actors - and sending the reponse from the actor back to the
- * client. The "backend" actors functions much as bottom halves in system
- * level interrupt programming. The requets dispatching done by this class
- * would be the upper half.
+ * to a set of actors and sending the reponse from the actor back to the
+ * client.
+ * <p/>
+ * The "backend" actors functions much as <i>bottom halves</i> in system
+ * level interrupt programming. The HTTPServer manages an actor per active
+ * HTTP connection which is considered the <i>upper half</i>. The upper half
+ * dispatches incoming request to the right bottom half. When
+ * the bottom half responds the upper half sends back the reply to the
+ * HTTP client.
  *
  * @author Mikkel Kamstrup Erlandsen <mailto:mke@statsbiblioteket.dk>
  * @since Feb 15, 2010
@@ -38,10 +43,36 @@ public class HTTPServer {
     MessageBus bus;
     boolean isStarted;
 
+    /**
+     * Create a new HTTP server listening on port {@code port}. To start
+     * listening you must invoke the server's {@link #start()} method. Before
+     * doing so you must install a set of handlers with the
+     * {@link #registerHandler} method.
+     * <p/>
+     * The HTTP server will be configured to spawn, and talk to, actors on
+     * the default message bus.
+     *
+     * @param port the port to listen on
+     * @throws IOException if there is an error setting up the server socket
+     * @see juglr.MessageBus#getDefault()
+     */
     public HTTPServer(int port) throws IOException {
         this(port, MessageBus.getDefault());
     }
 
+    /**
+     * Create a new HTTP server listening on port {@code port}. To start
+     * listening you must invoke the server's {@link #start()} method. Before
+     * doing so you must install a set of handlers with the
+     * {@link #registerHandler} method.
+     * <p/>
+     * The HTTP server will be configured to spawn, and talk to, actors on
+     * the message bus {@code messageBus}.
+     *
+     * @param port the port to listen on
+     * @param messageBus the MessageBus to use
+     * @throws IOException if there is an error setting up the server socket 
+     */
     public HTTPServer(int port, MessageBus messageBus) throws IOException {
         bus = messageBus;
         tcpServer = new TCPServerActor(
@@ -53,14 +84,21 @@ public class HTTPServer {
      * Configure all requests with URLs matching {@code pathRegex} to be handled
      * by the actor living at the {@code handler} address.
      * <p/>
-     * The {@code handler} <i>must</i> reply with a {@link HTTPResponse} to any
-     * incoming message, sending the reply to {@code msg.getReplyTo()}. It is
-     * strongly recommended that this be done in a {@code finally} clause.
      * Messages sent from the HTTPServer to the handler are guaranteed to be
      * instances of {@link HTTPRequest}s.
      * <p/>
-     * When looking up a matching handler the first matching one will be used.
-     * The handlers are checked in the order they are registered.
+     * The {@code handler} <i>must</i> reply with a {@link HTTPResponse} or
+     * {@link Box} to any incoming message, sending the reply to
+     * {@code msg.getReplyTo()}. Sending a {@code Box} as response will
+     * automatically result in a HTTP status code 200 OK. To alter the response
+     * code you must wrap the response box in a {@code HTTPResponse}.
+     * <p/>
+     * It is strongly recommended that the handler replies in a {@code finally}
+     * clause. Failing to reply will result in dangling connections, and empty
+     * replies or timeouts for clients.
+     * <p/>
+     * When looking up a matching handler the first one with a matching path
+     * will be used. The handlers are checked in the order they are registered.
      *
      * @param urlRegex A regular expression the request URL must match
      *        for the request to be forwarded to {@code handler}
@@ -83,8 +121,8 @@ public class HTTPServer {
     }
 
     /**
-     * Start listening on the configured port. After invoking start the
-     * {@link #registerHandler} should not be called again
+     * Start listening on the configured port. After invoking {@code start()}
+     * the {@link #registerHandler} method should not be called again
      * @throws IllegalStateException if the server has already been started
      */
     public void start() {
@@ -137,17 +175,17 @@ public class HTTPServer {
                 /* The bottom half actor should send a Box back to us */
                 @Override
                 public void react(Message msg) {
-                    if (!(msg instanceof HTTPResponse)) {
-                        throw new MessageFormatException(
-                                                  "Expected HTTPResponse");
-                    }
-
-                    HTTPResponse resp = (HTTPResponse)msg;
-                    try {
+                    if (msg instanceof HTTPResponse) {
+                        HTTPResponse resp = (HTTPResponse)msg;
                         respond(resp.getStatus(), resp.getBody());
-                    } catch (IOException e) {
-                        // FIXME: Better handling?
-                        e.printStackTrace();
+                    } else if (msg instanceof Box) {
+                        Box body = (Box)msg;
+                        respond(HTTP.Status.OK, body);
+                    } else {
+                        respondError(HTTP.Status.InternalError, String.format(
+                                "Error in internal message routing. Got '%s'," +
+                                 " but expected Box or HTTPResponse",
+                                msg.getClass().getSimpleName()));
                     }
                 }
 
@@ -196,26 +234,34 @@ public class HTTPServer {
                 }
 
                 /* Send a response msg to the client and shut down the actor */
-                private void respond(HTTP.Status status, Box msg)
-                                                            throws IOException {
+                private void respond(HTTP.Status status, Box body) {
                     try{
-                        byte[] msgBytes = msg.toBytes();
+                        byte[] _body = body.toBytes();
 
                         resp.writeVersion(HTTP.Version.ONE_ZERO);
                         resp.writeStatus(status);
-                        resp.writeHeader("Content-Length", "" + msgBytes.length);
+                        resp.writeHeader("Content-Length", "" + _body.length);
                         resp.writeHeader("Server", "juglr");
                         resp.startBody();
-                        resp.writeBody(msgBytes);
+                        resp.writeBody(_body);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.err.println(
+                              "Error sending HTTP response: " + e.getMessage());
                     } finally {
                         getBus().freeAddress(getAddress());
-                        resp.close();
+                        try {
+                            resp.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            System.err.println("Error closing HTTP connection: "
+                                               + e.getMessage());
+                        }
                     }
                 }
 
                 /* Send an error to the client and shut down the actor */
-                private void respondError(HTTP.Status status, String msg)
-                                                            throws IOException {
+                private void respondError(HTTP.Status status, String msg) {
                     Box resp = Box.newMap();
                     respond(status, resp.put("error", msg));
                 }

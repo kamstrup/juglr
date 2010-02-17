@@ -5,7 +5,6 @@ import juglr.*;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,9 +53,11 @@ public class HTTPServer {
      * Configure all requests with URLs matching {@code pathRegex} to be handled
      * by the actor living at the {@code handler} address.
      * <p/>
-     * Note that {@code handler} <i>must</i> reply with a {@link Box} to any
+     * The {@code handler} <i>must</i> reply with a {@link HTTPResponse} to any
      * incoming message, sending the reply to {@code msg.getReplyTo()}. It is
-     * strongly recommended that this be done in a finally clause.
+     * strongly recommended that this be done in a {@code finally} clause.
+     * Messages sent from the HTTPServer to the handler are guaranteed to be
+     * instances of {@link HTTPRequest}s.
      * <p/>
      * When looking up a matching handler the first matching one will be used.
      * The handlers are checked in the order they are registered.
@@ -136,26 +137,16 @@ public class HTTPServer {
                 /* The bottom half actor should send a Box back to us */
                 @Override
                 public void react(Message msg) {
-                    if (!(msg instanceof Box)) {
+                    if (!(msg instanceof HTTPResponse)) {
                         throw new MessageFormatException(
-                                                  "Expected Box");
+                                                  "Expected HTTPResponse");
                     }
 
-                    Box box = (Box)msg;
-                    HTTP.Status status;
-                    if (box.getType() == Box.Type.MAP &&
-                        box.has("__httpStatusCode__")) {
-                        status = HTTP.Status.fromHttpOrdinal(
-                                                           (int)box.getLong());
-                         box.getMap().remove("__httpStatusCode__");
-                    } else {
-                        status = HTTP.Status.OK;
-                    }
-
+                    HTTPResponse resp = (HTTPResponse)msg;
                     try {
-                        respond(status, box);
+                        respond(resp.getStatus(), resp.getBody());
                     } catch (IOException e) {
-                        // FIXME
+                        // FIXME: Better handling?
                         e.printStackTrace();
                     }
                 }
@@ -232,9 +223,9 @@ public class HTTPServer {
                 private void dispatch(HTTP.Method method, Address bottomHalf,
                                       CharSequence uri, Reader msgBody)
                                                             throws IOException {
-                    Box msg;
+                    Box box;
                     try {
-                        msg = msgParser.parse(msgBody);
+                        box = msgParser.parse(msgBody);
                     } catch (MessageFormatException e) {
                         respondError(HTTP.Status.BadRequest,
                                    "Illegal JSON POST data. " + e.getMessage());
@@ -243,7 +234,7 @@ public class HTTPServer {
 
                     // BH should respond with a box to msg.getReplyTo()
                     // FIXME: We need a timeout to avoid leaking SocketChannels
-                    send(msg, bottomHalf);
+                    send(new HTTPRequest(uri, method, box), bottomHalf);
                 }
 
                 private Address findBottomHalf(

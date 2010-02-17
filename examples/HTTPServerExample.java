@@ -27,29 +27,27 @@
 
 import juglr.*;
 import juglr.net.HTTP;
+import juglr.net.HTTPRequest;
+import juglr.net.HTTPResponse;
 import juglr.net.HTTPServer;
 
-import static juglr.Box.Type;
-
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.CharBuffer;
 
 public class HTTPServerExample {
 
     static class CalcActor extends Actor {
 
         public void react(Message msg) {
-            if (!(msg instanceof Box)) {
-                throw new MessageFormatException("Expected Box");
+            if (!(msg instanceof HTTPRequest)) {
+                throw new MessageFormatException("Expected HTTPRequest");
             }
 
             Box resp = Box.newMap();
-            Box box = (Box)msg;
+            Box box = ((HTTPRequest)msg).getBody();
             if (!box.has("isPrime")) {
                 resp.put("error", "No 'isPrime' key in request");
-                send(resp, msg.getReplyTo());
+                send(new HTTPResponse(HTTP.Status.BadRequest, resp),
+                     msg.getReplyTo());
                 return;
             }
 
@@ -62,10 +60,11 @@ public class HTTPServerExample {
                 } else {
                     resp.put("response", "false");
                 }
-                send(resp, msg.getReplyTo());
+                send(new HTTPResponse(HTTP.Status.OK, resp), msg.getReplyTo());
             } catch (NumberFormatException e) {
                 resp.put("error", "Not a valid integer: " + test.toString());
-                send(resp, msg.getReplyTo());
+                send(new HTTPResponse(HTTP.Status.BadRequest, resp),
+                     msg.getReplyTo());
             }
         }
     }

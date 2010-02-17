@@ -49,6 +49,10 @@ public class JSonBoxParser implements BoxParser {
         }
     }
 
+    public Box parse(InputStream in) throws IOException {
+        return parse(new InputStreamReader(in));
+    }
+
     private Box realParse(Reader in) throws JSONException {
         JSONTokener t = new JSONTokener(in);
         JSONObject obj = new JSONObject(t);

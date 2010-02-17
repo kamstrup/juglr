@@ -1,5 +1,6 @@
 package juglr;
 
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.File;
 import java.io.IOException;
@@ -20,4 +21,6 @@ public interface BoxParser {
     public Box parse(Reader in) throws IOException;
 
     public Box parse(File in) throws IOException;
+
+    public Box parse(InputStream in) throws IOException;
 }

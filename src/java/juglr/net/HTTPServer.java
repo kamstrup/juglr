@@ -209,7 +209,7 @@ public class HTTPServer {
                         resp.writeBody(msgString);
                     } finally {
                         getBus().freeAddress(getAddress());
-                        resp.close();                        
+                        resp.close();
                     }
                 }
 

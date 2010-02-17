@@ -1,5 +1,9 @@
 package juglr;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.io.Serializable;
 
@@ -645,5 +649,37 @@ public class Box extends Message implements Serializable {
                 throw new RuntimeException("Unexpected message type " + type);
         }
 
+    }
+
+    public byte[] toBytes() {
+        switch (type) {
+            case INT:
+            case FLOAT:
+                return val.toString().getBytes();
+            case BOOLEAN:
+                if ((Boolean)val) {
+                    return new byte[]{'t', 'r', 'u', 'e'};
+                } else {
+                    return new byte[]{'f', 'a', 'l', 's', 'e'};
+                }
+            case STRING:
+            case MAP:
+            case LIST:
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                Appendable writer = new OutputStreamWriter(bytes);
+                try {
+                    new JSonBoxWriter().write(this, writer);
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                            "I/O Exception from in-memory work. " +
+                            "This should never happen");
+                }
+                return bytes.toByteArray();
+            default:
+                // This should never happen
+                throw new RuntimeException("Unexpected message type " + type);
+        }
+
+        
     }
 }

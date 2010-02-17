@@ -170,9 +170,9 @@ public class MessageBus {
             throw new AddressAlreadyOwnedException(name);
         }
 
-        if (name.startsWith("/")) {
+        if (!name.startsWith("/")) {
             throw new IllegalAddressException(
-                    "Address must not start with '/' : " + name);
+                    "Address must start with '/' : " + name);
         }
 
         Address address =

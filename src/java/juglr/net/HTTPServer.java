@@ -199,14 +199,14 @@ public class HTTPServer {
                 private void respond(HTTP.Status status, Box msg)
                                                             throws IOException {
                     try{
-                        String msgString = msg.toString();
+                        byte[] msgBytes = msg.toBytes();
 
                         resp.writeVersion(HTTP.Version.ONE_ZERO);
                         resp.writeStatus(status);
-                        resp.writeHeader("Content-Length", "" + msgString.length());
+                        resp.writeHeader("Content-Length", "" + msgBytes.length);
                         resp.writeHeader("Server", "juglr");
                         resp.startBody();
-                        resp.writeBody(msgString);
+                        resp.writeBody(msgBytes);
                     } finally {
                         getBus().freeAddress(getAddress());
                         resp.close();

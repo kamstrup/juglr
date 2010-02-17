@@ -1,11 +1,8 @@
 package juglr;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.io.Serializable;
 
 /**
  * Recommended {@link Message} class for general purpose messaging.
@@ -651,6 +648,14 @@ public class Box extends Message implements Serializable {
 
     }
 
+    /**
+     * Return a newly allocated byte array containing this box as JSON encoded
+     * in the default system encoding.
+     * <p/>
+     * This method is slightly faster than {@code toString().getBytes()} in that
+     * it avoids the intermediate string representation of the box.
+     * @return a JSON data encoded in the default system encoding
+     */
     public byte[] toBytes() {
         switch (type) {
             case INT:
@@ -666,9 +671,11 @@ public class Box extends Message implements Serializable {
             case MAP:
             case LIST:
                 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                Appendable writer = new OutputStreamWriter(bytes);
+                Writer writer = new OutputStreamWriter(bytes);
                 try {
                     new JSonBoxWriter().write(this, writer);
+                    writer.flush();
+                    writer.close();
                 } catch (IOException e) {
                     throw new RuntimeException(
                             "I/O Exception from in-memory work. " +

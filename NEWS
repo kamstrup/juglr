@@ -1,5 +1,5 @@
 ========================
-2010-02-DD: Juglr 0.3.0
+2010-02-17: Juglr 0.3.0
 ========================
 
  * Remove the method Actor.awaitMessage() as it incurred a massive complexity
@@ -9,7 +9,13 @@
    and react() dispatching is now a lot faster!
 
  * Implement a generic actor-powered HTTPServer class and make the example
- in examples/HTTPServerExample use it
+   in examples/HTTPServerExample use it
+
+ * HTTP responses with non-ascii unicode characters had their Content-Length
+   header set to the number of characters in the body, not the number of bytes
+   as it should be
+
+ * Removed HTTPMessageBus. Please use the new HTTPServer class in stead
 
 ========================
 2010-02-10: Juglr 0.2.1

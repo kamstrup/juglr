@@ -34,8 +34,18 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p/>
  * <h3>Parallelizing Work</h3>
  * Each actor is guaranteed to only be handling one message at a time.
- * In technical terms this means that {@link #react(Message)} is guaranteed to
- * be called from a context synchronized on the actor. Juglr provides some
+ * In technical terms this means that {@link #react(Message)} and
+ * {@link #start()}is guaranteed to be called from a context synchronized on
+ * the actor. This has the nice effect of making actors automatically thread
+ * safe - actor implementations need not take any precautions to remain thread
+ * safe.
+ * <p/>
+ * The only tricky part in writing highly parallel actors is to keep in mind
+ * that it might not be the same thread that invokes the actor methods from time
+ * to time. This makes constructs like {@code ThreadLocal}s more tricky to use
+ * correctly, but it can still be done. 
+ * <p/>
+ * Juglr provides some
  * helper classes for parallelizing work, namely {@link DelegatingActor} and
  * {@link MulticastActor}.
  *

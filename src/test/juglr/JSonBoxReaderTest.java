@@ -157,6 +157,12 @@ public class JSonBoxReaderTest {
                                  .put("map", new Box(Box.Type.MAP))
                                  .put("bool", new Box(false)),
                          "{\"map\":{},\"bool\":false}"});
+        messages.add(new Object[]{
+                         Box.newMap()
+                                 .put("foo", Box.newList()
+                                    .add(Box.newMap().put("bar", "quiz"))
+                                    .add(Box.newMap().put("bar", "quiz"))),
+                         "{\"foo\":[{\"bar\":\"quiz\"},{\"bar\":\"quiz\"}]}"});
         return messages.iterator();
     }
 

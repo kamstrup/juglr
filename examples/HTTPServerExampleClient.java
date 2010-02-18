@@ -28,7 +28,7 @@ public class HTTPServerExampleClient {
             w.writeMethod(HTTP.Method.GET);
             w.writeUri("/calc/");
             w.writeVersion(HTTP.Version.ONE_ZERO);
-            w.writeHeader("User-Agent", "Juglr/0.2");
+            w.writeHeader("User-Agent", "Juglr/0.3");
             w.startBody();
             w.writeBody("{\"isPrime\" : " + i + "}");
             w.flush();

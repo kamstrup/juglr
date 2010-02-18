@@ -1,4 +1,12 @@
 ========================
+2010-02-18: Juglr 0.3.1
+========================
+
+ * Properly flush byte arrays in HTTPWriter that overflows the internal buffer
+   size, by flushing them in chunks. This fixes an UnsupportedOperationException
+   that would be thrown prior to this fix
+
+========================
 2010-02-17: Juglr 0.3.0
 ========================
 

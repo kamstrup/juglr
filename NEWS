@@ -6,6 +6,11 @@
    size, by flushing them in chunks. This fixes an UnsupportedOperationException
    that would be thrown prior to this fix
 
+ * Implement convenience getters on Box that takes a default value in case no
+   value is defined for the requested field
+
+ * HTTPReader could detect end-of-http-headers prematurely
+
 ========================
 2010-02-17: Juglr 0.3.0
 ========================

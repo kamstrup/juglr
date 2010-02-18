@@ -415,6 +415,12 @@ public class Box extends Message implements Serializable {
         return get(key).getLong();
     }
 
+    public long getLong(String key, long defaultVal) {
+        Box val = get(key);
+        if (val != null) return val.getLong();
+        return defaultVal;
+    }
+
     /**
      * Get the {@code double} which is contained in this Box of {@code FLOAT}
      * type
@@ -433,6 +439,12 @@ public class Box extends Message implements Serializable {
 
     public double getFloat(String key) {
         return get(key).getFloat();
+    }
+
+    public double getFloat(String key, double defaultVal) {
+        Box val = get(key);
+        if (val != null) return val.getFloat();
+        return defaultVal;
     }
 
     /**
@@ -455,6 +467,12 @@ public class Box extends Message implements Serializable {
         return get(key).getBoolean();
     }
 
+    public boolean getBoolean(String key, boolean defaultVal) {
+        Box val = get(key);
+        if (val != null) return val.getBoolean();
+        return defaultVal;
+    }
+
     /**
      * Get the {@link String} which is contained in this Box of {@code STRING}
      * type
@@ -473,6 +491,12 @@ public class Box extends Message implements Serializable {
 
     public String getString(String key) {
         return get(key).getString();
+    }
+
+    public String getString(String key, String defaultVal) {
+        Box val = get(key);
+        if (val != null) return val.getString();
+        return defaultVal;
     }
 
     /**
@@ -494,6 +518,12 @@ public class Box extends Message implements Serializable {
         return get(key).getList();
     }
 
+    public List<Box> getList(String key, List<Box> defaultVal) {
+        Box val = get(key);
+        if (val != null) return val.getList();
+        return defaultVal;
+    }
+
     /**
      * Get the {@link Map} which is contained in this Box of {@code MAP} type
      * @return the value contained in the box
@@ -511,6 +541,12 @@ public class Box extends Message implements Serializable {
 
     public Map<String,Box> getMap(String key) {
         return get(key).getMap();
+    }
+
+    public Map<String,Box> getMap(String key, Map<String,Box> defaultVal) {
+        Box val = get(key);
+        if (val != null) return val.getMap();
+        return defaultVal;
     }
 
     /**

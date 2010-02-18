@@ -98,12 +98,21 @@ public class HTTPWriter {
             flush();
         }
 
-        // If there still isn't room we need to write and flush in chunks
-        if (len > buf.remaining()) {
-            throw new UnsupportedOperationException("FIXME");
+        // If there still isn't room we need to write and flush in chunks,
+        // if it fits entirely in the buffer, then it's easy
+        if (len < buf.remaining()) {
+            buf.put(bytes, offset, len);
+        } else {
+            int remainingBytes = len;
+            int toWrite;
+            while (remainingBytes > 0) {
+                toWrite = Math.min(remainingBytes, buf.remaining());
+                assert toWrite > 0;
+                buf.put(bytes, offset + (len-remainingBytes), toWrite);
+                remainingBytes -= toWrite;
+                flush();
+            }
         }
-
-        buf.put(bytes, offset, len);
     }
 
     public void flush() throws IOException {

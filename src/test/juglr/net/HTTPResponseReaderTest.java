@@ -96,6 +96,37 @@ public class HTTPResponseReaderTest {
                 "aoeaa-æøå"
         });
 
+        // One header, no body
+        buf = ByteBuffer.allocate(1024);
+        msg =
+                "HTTP/1.0 404 NotFound\r\n" +
+                "Server: juglr\r\n" +
+                "\r\n";
+        buf.put(msg.getBytes());
+        buf.flip();
+        data.add(new Object[]{
+                prepareSocket(buf),
+                HTTP.Version.ONE_ZERO,
+                HTTP.Status.NotFound,
+                1,
+                ""
+        });
+
+        // No header, no body
+        buf = ByteBuffer.allocate(1024);
+        msg =
+                "HTTP/1.0 404 NotFound\r\n" +
+                "\r\n";
+        buf.put(msg.getBytes());
+        buf.flip();
+        data.add(new Object[]{
+                prepareSocket(buf),
+                HTTP.Version.ONE_ZERO,
+                HTTP.Status.NotFound,
+                0,
+                ""
+        });
+
         // One header, large odd-sized ascii body
         buf = ByteBuffer.allocate(206577);
         msg =

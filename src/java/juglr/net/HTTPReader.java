@@ -64,7 +64,7 @@ public class HTTPReader {
         int fieldEnd = buf.position();
 
         // The empty line just before the body
-        if (fieldEnd + 2 < buf.limit() &&
+        if (fieldEnd + 2 <= buf.limit() &&
             buf.get(fieldEnd) == '\r' && buf.get(fieldEnd + 1) == '\n') {
 
             // Move position to after fieldEnd + '\r' + '\n'

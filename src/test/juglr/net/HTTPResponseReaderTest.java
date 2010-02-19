@@ -25,35 +25,7 @@ import java.util.List;
 /**
  * Test cases for HTTPReponseReader
  */
-public class HTTPResponseReaderTest {
-
-    static int serverCounter = 0;
-
-    // Return a SocketChannel that reads the content of 'msg'
-    private SocketChannel prepareSocket(final ByteBuffer msg) throws Exception {
-        final ServerSocketChannel serverChannel = ServerSocketChannel.open();
-        SocketChannel clientChannel = SocketChannel.open();
-
-        serverChannel.socket().bind(null);
-        SocketAddress serverAddr = serverChannel.socket().getLocalSocketAddress();
-
-        Thread server = new Thread(new Runnable() {
-
-            public void run() {
-                try {
-                    SocketChannel channel = serverChannel.accept();
-                    channel.write(msg);
-                    channel.close();
-                } catch (IOException e) {
-                    fail("Failed writing message to socket", e);
-                }
-            }
-        }, "Server"+(++serverCounter));
-        server.start();
-
-        clientChannel.connect(serverAddr);
-        return clientChannel;
-    }
+public class HTTPResponseReaderTest extends HTTPReaderTest {    
 
     /*
      * Generate (in_data, out_expected) pairs of HTTP responses

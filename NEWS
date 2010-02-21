@@ -1,4 +1,12 @@
 ========================
+2010-02-DD: Juglr 0.3.2
+========================
+
+ * The JSonBoxParser only allowed JSON data starting with a { (in effect - only
+   objects). Now it accepts any JSON value: Objects, arrays, booleans, strings,
+   and numbers
+
+========================
 2010-02-18: Juglr 0.3.1
 ========================
 

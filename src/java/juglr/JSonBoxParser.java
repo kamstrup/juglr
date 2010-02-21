@@ -55,7 +55,7 @@ public class JSonBoxParser implements BoxParser {
 
     private Box realParse(Reader in) throws JSONException {
         JSONTokener t = new JSONTokener(in);
-        JSONObject obj = new JSONObject(t);
+        Object obj = t.nextValue();
         return parseObject(obj);
     }
 

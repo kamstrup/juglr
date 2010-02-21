@@ -11,8 +11,8 @@ import java.util.*;
  */
 public class BoxParserTest {
 
-    @DataProvider(name="json")
-    public Iterator<Object[]> flatJSon() {
+    @DataProvider(name="objects")
+    public Iterator<Object[]> jsonDicts() {
         List<Object[]> data = new ArrayList<Object[]>();
 
         data.add(new Object[]{
@@ -54,13 +54,48 @@ public class BoxParserTest {
         return data.iterator();
     }
 
-    @Test(dataProvider="json")
-    public void parseJSon(String json, Message expected) {
+    @DataProvider(name="arrays")
+    public Iterator<Object[]> jsonArrays() {
+        List<Object[]> data = new ArrayList<Object[]>();
+
+        data.add(new Object[]{
+                "[]",
+                Box.newList()
+        });
+        data.add(new Object[]{
+                "[1]",
+                Box.newList().add(1)
+        });
+        data.add(new Object[]{
+                "[1, 2]",
+                Box.newList()
+                        .add(1)
+                        .add(2)
+        });
+        data.add(new Object[]{
+                "[1, [2,3]]",
+                Box.newList()
+                        .add(1)
+                        .add(Box.newList().add(2).add(3))
+        });
+
+        return data.iterator();
+    }
+
+    @Test(dataProvider="objects")
+    public void parseDicts(String json, Message expected) {
         BoxParser parser = new JSonBoxParser();
 
         Box result = parser.parse(json);
         assertEquals(result,expected);
+    }
 
+    @Test(dataProvider="arrays")
+    public void parseArrays(String json, Message expected) {
+        BoxParser parser = new JSonBoxParser();
+
+        Box result = parser.parse(json);
+        assertEquals(result,expected);
     }
 
     @Test

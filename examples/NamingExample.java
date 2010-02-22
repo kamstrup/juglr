@@ -1,10 +1,10 @@
 /**
  * Example class demonstrating a named actor.
  * Compile with:
- *     javac -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar NamingExample.java
+ *     javac -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.3.2.jar NamingExample.java
  *
  * Run with:
- *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.0.1.jar:. NamingExample
+ *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.3.2.jar:. NamingExample
  */
 import juglr.Actor;
 import juglr.Address;

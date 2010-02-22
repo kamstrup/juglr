@@ -4,10 +4,10 @@
  * over three parallel calculators.
  * <p/>
  * Compile with:
- *     javac -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.3.1.jar HTTPServerExample.java
+ *     javac -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.3.2.jar HTTPServerExample.java
  *
  * Run with:
- *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.3.1.jar:. HTTPServerExample
+ *     java -Xbootclasspath/p:../lib/jsr166.jar -classpath ../juglr-0.3.2.jar:. HTTPServerExample
  * <p/>
  * JSON messages should be send to
  * <a href="http://localhost:4567/calc">http://localhost:4567/calc</a>

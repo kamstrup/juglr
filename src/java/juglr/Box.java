@@ -722,7 +722,43 @@ public class Box extends Message implements Serializable {
                 // This should never happen
                 throw new RuntimeException("Unexpected message type " + type);
         }
+    }
 
-        
+    @SuppressWarnings("unchecked")
+    public static Box parseObject (Object obj) throws TypeException {
+        Box msg;
+
+        if (obj instanceof Integer) {
+            return new Box((Integer)obj);
+        } else if (obj instanceof Long) {
+            return new Box((Long)obj);
+        } else if (obj instanceof Double) {
+            return new Box((Double)obj);
+        } else if (obj instanceof Boolean) {
+            return new Box((Boolean)obj);
+        } else if (obj instanceof String) {
+            return new Box((String)obj);
+        } else if (obj instanceof List) {
+            List a = (List)obj;
+            msg = Box.newList();
+            for (int i = 0; i < a.size(); i++) {
+                msg.add(parseObject(a.get(i)));
+            }
+            return msg;
+        } else if (obj instanceof Map) {
+            Map jsObj = (Map)obj;
+            Iterator<String> iter = (Iterator<String>)jsObj.keySet().iterator();
+            msg = Box.newMap();
+            while (iter.hasNext()) {
+                String key = iter.next();
+                msg.put(key, parseObject(jsObj.get(key)));
+            }
+            return msg;
+        } else if (obj instanceof Box) {
+            return (Box)obj;
+        } else {
+            throw new RuntimeException("Unexpected object type from JSON" +
+                                       "stream " + obj.getClass());
+        }
     }
 }

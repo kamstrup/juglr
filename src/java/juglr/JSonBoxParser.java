@@ -18,6 +18,12 @@ import java.util.Iterator;
  */
 public class JSonBoxParser implements BoxParser {
 
+    /**
+     * Parse a JSON formatted string into a {@code Box}
+     * @param in the string to parse
+     * @return returns a {@link Box} representing the JSON document, or
+     *         {@code null} in case the string is empty
+     */
     public Box parse (String in) {
         try {
             return parse(new StringReader(in));
@@ -28,6 +34,12 @@ public class JSonBoxParser implements BoxParser {
         }
     }
 
+    /**
+     * Parse a JSON formatted stream into a {@code Box}
+     * @param in the stream to parse
+     * @return returns a {@link Box} representing the JSON document, or
+     *         {@code null} in case the stream is empty
+     */
     public Box parse (Reader in) throws IOException {
          try {
             return realParse(in);
@@ -38,6 +50,12 @@ public class JSonBoxParser implements BoxParser {
         }
     }
 
+    /**
+     * Parse a JSON formatted file into a {@code Box}
+     * @param jsonFile the file to parse
+     * @return returns a {@link Box} representing the JSON document, or
+     *         {@code null} in case the file is empty
+     */
     public Box parse (File jsonFile) throws IOException {
         Reader r = new FileReader(jsonFile);
         try {
@@ -49,14 +67,23 @@ public class JSonBoxParser implements BoxParser {
         }
     }
 
+    /**
+     * Parse a JSON formatted stream into a {@code Box}
+     * @param in the stream to parse
+     * @return returns a {@link Box} representing the JSOn document, or
+     *         {@code null} in case the stream is empty
+     */
     public Box parse(InputStream in) throws IOException {
         return parse(new InputStreamReader(in));
     }
 
     private Box realParse(Reader in) throws JSONException {
         JSONTokener t = new JSONTokener(in);
-        Object obj = t.nextValue();
-        return parseObject(obj);
+        if (t.more()) {
+            Object obj = t.nextValue();
+            return parseObject(obj);
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")

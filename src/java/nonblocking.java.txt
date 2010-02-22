@@ -1,0 +1,56 @@
+// FROM http://onjava.com/pub/a/onjava/2002/09/04/nio.html?page=2
+// Infinite server loop
+for(;;) {
+  // Waiting for events
+  selector.select();
+  // Get keys
+  Set keys = selector.selectedKeys();
+  Iterator i = keys.iterator();
+
+  // For each keys...
+  while(i.hasNext()) {
+    SelectionKey key = (SelectionKey) i.next();
+
+    // Remove the current key
+    i.remove();
+
+    // if isAccetable = true
+    // then a client required a connection
+    if (key.isAcceptable()) {
+      // get client socket channel
+      SocketChannel client = server.accept();
+      // Non Blocking I/O
+      client.configureBlocking(false);
+      // recording to the selector (reading)
+      client.register(selector, SelectionKey.OP_READ);
+      continue;
+    }
+
+    // if isReadable = true
+    // then the server is ready to read
+    if (key.isReadable()) {
+
+      SocketChannel client = (SocketChannel) key.channel();
+
+      // Read byte coming from the client
+      int BUFFER_SIZE = 32;
+      ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+      try {
+        client.read(buffer);
+      }
+      catch (Exception e) {
+        // client is no longer active
+        e.printStackTrace();
+        continue;
+      }
+
+      // Show bytes on the console
+      buffer.flip();
+      Charset charset=Charset.forName("ISO-8859-1");
+      CharsetDecoder decoder = charset.newDecoder();
+      CharBuffer charBuffer = decoder.decode(buffer);
+      System.out.print(charBuffer.toString());
+      continue;
+    }
+  }
+}
